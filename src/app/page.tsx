@@ -1,13 +1,18 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { COMIC_STYLES } from '@/lib/styles';
 
 const VoxelBackground = dynamic(() => import('@/components/voxel-background'), { ssr: false });
-const InkParticles = dynamic(() => import('@/components/ink-particles').then(m => ({ default: m.InkParticles })), { ssr: false });
-const TypewriterText = dynamic(() => import('@/components/typewriter-text').then(m => ({ default: m.TypewriterText })), { ssr: false });
+const InkParticles = dynamic(
+  () => import('@/components/ink-particles').then((m) => ({ default: m.InkParticles })),
+  { ssr: false },
+);
+const TypewriterText = dynamic(
+  () => import('@/components/typewriter-text').then((m) => ({ default: m.TypewriterText })),
+  { ssr: false },
+);
 
 const FEATURES = [
   { icon: '🧬', title: 'AI Story Engine', desc: 'DeepSeek V3.2 writes multi-arc narratives with hidden overarching plots that unfold across volumes.' },
@@ -19,10 +24,10 @@ const FEATURES = [
 ];
 
 const STATS = [
-  { value: '12', label: 'Comic Styles', suffix: '' },
-  { value: '0.02', label: 'Per Page', suffix: '$' },
-  { value: '16', label: 'Languages', suffix: '+' },
-  { value: '10', label: 'Hook Types', suffix: '' },
+  { value: '12', label: 'Comic Styles', prefix: '', suffix: '' },
+  { value: '0.02', label: 'Per Page', prefix: '$', suffix: '' },
+  { value: '16', label: 'Languages', prefix: '', suffix: '+' },
+  { value: '10', label: 'Hook Types', prefix: '', suffix: '' },
 ];
 
 const TESTIMONIALS = [
@@ -45,55 +50,34 @@ export default function HomePage() {
       <InkParticles />
 
       {/* ========== HERO ========== */}
-      <section
-        className="relative min-h-screen flex flex-col items-center justify-center text-center px-4"
-      >
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-        >
+      <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 animate-fadeIn">
+        <div className="animate-slideUp">
           <h1 className="font-[family-name:var(--font-display)] text-6xl md:text-8xl lg:text-9xl font-black leading-none mb-4">
             <span className="bg-gradient-to-r from-sakura-pink via-[#FF8FAB] to-neon-cyan bg-clip-text text-transparent">
               MangaForge
             </span>
           </h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-xl md:text-2xl text-paper-warm/80 mb-3 font-[family-name:var(--font-body)]"
-          >
+          <p className="text-xl md:text-2xl text-paper-warm/80 mb-3 font-[family-name:var(--font-body)] animate-fadeIn animation-delay-500">
             Where Stories Come Alive
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
-            transition={{ delay: 0.8 }}
-            className="text-sm md:text-base text-ink-light italic mb-10 h-8"
-          >
+          </p>
+          <div className="text-sm md:text-base text-ink-light italic mb-10 h-8 opacity-60 animate-fadeIn animation-delay-800">
             <TypewriterText />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1, duration: 0.6, type: 'spring' }}
-        >
+        <div className="animate-fadeIn animation-delay-1000">
           <Link href="/create">
             <button className="group relative px-12 py-5 rounded-2xl bg-sakura-pink text-paper-pure font-[family-name:var(--font-heading)] font-bold text-xl overflow-hidden sakura-glow-pulse hover:scale-105 transition-transform">
               <span className="relative z-10 flex items-center gap-3">
                 Start Creating
-                <motion.span animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>→</motion.span>
+                <span className="inline-block animate-bounceX">→</span>
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-sakura-pink to-[#FF8FAB] opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           </Link>
           <p className="mt-4 text-xs text-ink-light/50">No credit card required · 10 free credits</p>
-        </motion.div>
+        </div>
 
-        {/* Scroll indicator */}
         <div className="absolute bottom-10 animate-bounce">
           <svg className="w-6 h-6 text-ink-light/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -104,22 +88,15 @@ export default function HomePage() {
       {/* ========== STATS BAR ========== */}
       <section className="relative py-12 border-y border-ink-mid/20">
         <div className="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {STATS.map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="text-center"
-            >
+          {STATS.map((s) => (
+            <div key={s.label} className="text-center">
               <div className="font-[family-name:var(--font-display)] text-4xl md:text-5xl font-black text-paper-warm">
-                {s.suffix === '$' && <span className="text-neon-cyan text-2xl">$</span>}
+                {s.prefix && <span className="text-neon-cyan text-2xl">{s.prefix}</span>}
                 {s.value}
-                {s.suffix === '+' && <span className="text-sakura-pink">+</span>}
+                {s.suffix && <span className="text-sakura-pink">{s.suffix}</span>}
               </div>
               <div className="text-sm text-ink-light mt-1">{s.label}</div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </section>
@@ -127,15 +104,9 @@ export default function HomePage() {
       {/* ========== HOW IT WORKS ========== */}
       <section className="relative py-32 px-4">
         <div className="max-w-5xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-20"
-          >
+          <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-20">
             From <span className="text-neon-cyan">Idea</span> to <span className="text-sakura-pink">Manga</span> in Minutes
-          </motion.h2>
-
+          </h2>
           <div className="grid md:grid-cols-4 gap-8">
             {[
               { step: '01', title: 'Describe', desc: 'Type your story idea — from a single sentence to a detailed plot.', icon: '✍️' },
@@ -143,22 +114,13 @@ export default function HomePage() {
               { step: '03', title: 'Generate', desc: 'Watch your manga come to life page by page in real-time.', icon: '⚡' },
               { step: '04', title: 'Share', desc: 'Publish to the marketplace or export for print.', icon: '🌟' },
             ].map((item, i) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="relative text-center group"
-              >
+              <div key={item.step} className="relative text-center group">
                 <div className="text-5xl mb-4">{item.icon}</div>
                 <div className="text-xs font-mono text-neon-cyan mb-2">{item.step}</div>
                 <h3 className="font-[family-name:var(--font-heading)] text-xl mb-2">{item.title}</h3>
                 <p className="text-sm text-ink-light">{item.desc}</p>
-                {i < 3 && (
-                  <div className="hidden md:block absolute top-8 -right-4 text-ink-mid/30 text-3xl">→</div>
-                )}
-              </motion.div>
+                {i < 3 && <div className="hidden md:block absolute top-8 -right-4 text-ink-mid/30 text-3xl">→</div>}
+              </div>
             ))}
           </div>
         </div>
@@ -167,30 +129,17 @@ export default function HomePage() {
       {/* ========== FEATURES ========== */}
       <section className="relative py-32 px-4">
         <div className="max-w-6xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-4"
-          >
+          <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-4">
             Built <span className="text-sakura-pink">Different</span>
-          </motion.h2>
+          </h2>
           <p className="text-center text-ink-light mb-20 max-w-xl mx-auto">Not another AI toy. A production-grade creative platform.</p>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURES.map((f, i) => (
-              <motion.div
-                key={f.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="glass-card p-6 group hover:border-sakura-pink/30 transition-colors"
-              >
+            {FEATURES.map((f) => (
+              <div key={f.title} className="glass-card p-6 group hover:border-sakura-pink/30 transition-colors">
                 <div className="text-4xl mb-4">{f.icon}</div>
                 <h3 className="font-[family-name:var(--font-heading)] text-lg mb-2 group-hover:text-sakura-pink transition-colors">{f.title}</h3>
                 <p className="text-sm text-ink-light leading-relaxed">{f.desc}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -199,26 +148,13 @@ export default function HomePage() {
       {/* ========== STYLE SHOWCASE ========== */}
       <section className="relative py-32 px-4">
         <div className="max-w-6xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-4"
-          >
+          <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-4">
             12 Authentic <span className="text-neon-cyan">Styles</span>
-          </motion.h2>
+          </h2>
           <p className="text-center text-ink-light mb-16">Each with authentic reading direction, page layout, and visual language.</p>
-
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {COMIC_STYLES.map((style, i) => (
-              <motion.div
-                key={style.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="group cursor-pointer"
-              >
+            {COMIC_STYLES.map((style) => (
+              <div key={style.id} className="group cursor-pointer">
                 <div
                   className="relative rounded-xl overflow-hidden border border-ink-mid/30 hover:border-sakura-pink/50 transition-all duration-300"
                   style={{ background: `linear-gradient(135deg, ${style.accentColor}15, transparent)` }}
@@ -231,7 +167,7 @@ export default function HomePage() {
                     <p className="text-xs text-ink-light">{style.colorMode} · {style.readingDirection}</p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -240,30 +176,18 @@ export default function HomePage() {
       {/* ========== TESTIMONIALS ========== */}
       <section className="relative py-32 px-4">
         <div className="max-w-4xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-16"
-          >
+          <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-16">
             Creators <span className="text-sakura-pink">Love</span> It
-          </motion.h2>
+          </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t, i) => (
-              <motion.div
-                key={t.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="glass-card p-6"
-              >
+            {TESTIMONIALS.map((t) => (
+              <div key={t.name} className="glass-card p-6">
                 <p className="text-sm text-ink-light italic mb-4">&ldquo;{t.text}&rdquo;</p>
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">{t.avatar}</div>
                   <span className="text-sm font-medium">{t.name}</span>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -272,33 +196,21 @@ export default function HomePage() {
       {/* ========== PRICING ========== */}
       <section className="relative py-32 px-4" id="pricing">
         <div className="max-w-6xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-4"
-          >
+          <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-4">
             Simple <span className="text-gold-premium">Pricing</span>
-          </motion.h2>
+          </h2>
           <p className="text-center text-ink-light mb-16">Start free. Scale as you create.</p>
-
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PRICING.map((p, i) => (
-              <motion.div
+            {PRICING.map((p) => (
+              <div
                 key={p.tier}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
                 className={`rounded-2xl p-6 border transition-all ${
                   p.highlight
                     ? 'border-sakura-pink/50 bg-sakura-pink/5 shadow-lg shadow-sakura-pink/10'
                     : 'border-ink-mid/30 bg-ink-deep/50'
                 }`}
               >
-                {p.highlight && (
-                  <div className="text-xs font-mono text-sakura-pink mb-3">⭐ MOST POPULAR</div>
-                )}
+                {p.highlight && <div className="text-xs font-mono text-sakura-pink mb-3">⭐ MOST POPULAR</div>}
                 <h3 className="font-[family-name:var(--font-heading)] text-xl mb-1">{p.tier}</h3>
                 <div className="flex items-baseline gap-1 mb-1">
                   <span className="text-3xl font-black">{p.price}</span>
@@ -306,20 +218,22 @@ export default function HomePage() {
                 </div>
                 <div className="text-sm text-neon-cyan mb-6">⚡ {p.credits} credits/mo</div>
                 <ul className="space-y-2 mb-8">
-                  {p.features.map(f => (
+                  {p.features.map((f) => (
                     <li key={f} className="text-sm text-ink-light flex items-start gap-2">
                       <span className="text-sakura-pink mt-0.5">✓</span> {f}
                     </li>
                   ))}
                 </ul>
-                <button className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
-                  p.highlight
-                    ? 'bg-sakura-pink text-paper-pure hover:bg-sakura-soft sakura-glow-pulse'
-                    : 'bg-ink-wash text-paper-warm hover:bg-ink-mid border border-ink-mid'
-                }`}>
+                <button
+                  className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
+                    p.highlight
+                      ? 'bg-sakura-pink text-paper-pure hover:bg-sakura-soft sakura-glow-pulse'
+                      : 'bg-ink-wash text-paper-warm hover:bg-ink-mid border border-ink-mid'
+                  }`}
+                >
                   {p.cta}
                 </button>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -327,25 +241,19 @@ export default function HomePage() {
 
       {/* ========== FINAL CTA ========== */}
       <section className="relative py-32 px-4 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
-          <h2 className="font-[family-name:var(--font-display)] text-4xl md:text-6xl font-black mb-6">
-            <span className="bg-gradient-to-r from-sakura-pink to-neon-cyan bg-clip-text text-transparent">
-              Your Story Awaits
-            </span>
-          </h2>
-          <p className="text-ink-light text-lg mb-10 max-w-md mx-auto">
-            Join thousands of creators turning imagination into manga.
-          </p>
-          <Link href="/create">
-            <button className="px-16 py-6 rounded-2xl bg-sakura-pink text-paper-pure font-[family-name:var(--font-heading)] font-bold text-2xl sakura-glow-pulse hover:scale-105 transition-transform">
-              ⚒️ Start Forging
-            </button>
-          </Link>
-        </motion.div>
+        <h2 className="font-[family-name:var(--font-display)] text-4xl md:text-6xl font-black mb-6">
+          <span className="bg-gradient-to-r from-sakura-pink to-neon-cyan bg-clip-text text-transparent">
+            Your Story Awaits
+          </span>
+        </h2>
+        <p className="text-ink-light text-lg mb-10 max-w-md mx-auto">
+          Join thousands of creators turning imagination into manga.
+        </p>
+        <Link href="/create">
+          <button className="px-16 py-6 rounded-2xl bg-sakura-pink text-paper-pure font-[family-name:var(--font-heading)] font-bold text-2xl sakura-glow-pulse hover:scale-105 transition-transform">
+            ⚒️ Start Forging
+          </button>
+        </Link>
       </section>
 
       {/* ========== FOOTER ========== */}

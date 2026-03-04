@@ -183,3 +183,25 @@ body {
   border-radius: 2px;
   pointer-events: none;
 }
+
+/* ========== CSS Animations (Safari-safe, no framer-motion) ========== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes bounceX {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
+}
+
+.animate-fadeIn { animation: fadeIn 1s ease-out both; }
+.animate-slideUp { animation: slideUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-bounceX { animation: bounceX 1.5s ease-in-out infinite; }
+
+.animation-delay-500 { animation-delay: 0.5s; }
+.animation-delay-800 { animation-delay: 0.8s; }
+.animation-delay-1000 { animation-delay: 1s; }
