@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Pure CSS animated background — works everywhere, no WebGL needed
 function CSSBackground() {
@@ -27,15 +27,49 @@ function CSSBackground() {
   );
 }
 
+// Inline error boundary for Three.js — falls back to CSS if WebGL crashes
+class ThreeErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err: Error) {
+    console.warn('[MangaForge] WebGL background failed, using CSS fallback:', err.message);
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
+
 export default function VoxelBackground() {
   const [ThreeComp, setThreeComp] = useState<React.ComponentType | null>(null);
 
   useEffect(() => {
+    // Skip Three.js on devices with no WebGL or low-end GPUs
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+      if (!gl) return; // No WebGL — stay on CSS
+    } catch {
+      return;
+    }
+
     import('./voxel-three')
       .then((mod) => setThreeComp(() => mod.default))
       .catch(() => {});
   }, []);
 
   if (!ThreeComp) return <CSSBackground />;
-  return <ThreeComp />;
+  return (
+    <ThreeErrorBoundary fallback={<CSSBackground />}>
+      <ThreeComp />
+    </ThreeErrorBoundary>
+  );
 }
