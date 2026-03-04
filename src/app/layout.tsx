@@ -9,6 +9,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const delaGothicOne = Dela_Gothic_One({
   weight: "400",
@@ -76,7 +77,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen antialiased">
         <div className="screentone-overlay" />
-        <Providers>{children}</Providers>
+        <ErrorBoundary>
+          <Providers>{children}</Providers>
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { InkParticles } from '@/components/ink-particles';
-import { TypewriterText } from '@/components/typewriter-text';
 import { COMIC_STYLES } from '@/lib/styles';
 
 const VoxelBackground = dynamic(() => import('@/components/voxel-background'), { ssr: false });
+const InkParticles = dynamic(() => import('@/components/ink-particles').then(m => ({ default: m.InkParticles })), { ssr: false });
+const TypewriterText = dynamic(() => import('@/components/typewriter-text').then(m => ({ default: m.TypewriterText })), { ssr: false });
 
 const FEATURES = [
   { icon: '🧬', title: 'AI Story Engine', desc: 'DeepSeek V3.2 writes multi-arc narratives with hidden overarching plots that unfold across volumes.' },
@@ -40,18 +39,13 @@ const PRICING = [
 ];
 
 export default function HomePage() {
-  const { scrollYProgress } = useScroll();
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
-
   return (
     <main className="min-h-screen bg-ink-void relative overflow-hidden">
       <VoxelBackground />
       <InkParticles />
 
       {/* ========== HERO ========== */}
-      <motion.section
-        style={{ opacity: heroOpacity, scale: heroScale }}
+      <section
         className="relative min-h-screen flex flex-col items-center justify-center text-center px-4"
       >
         <motion.div
@@ -100,16 +94,12 @@ export default function HomePage() {
         </motion.div>
 
         {/* Scroll indicator */}
-        <motion.div
-          className="absolute bottom-10"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-        >
+        <div className="absolute bottom-10 animate-bounce">
           <svg className="w-6 h-6 text-ink-light/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
-        </motion.div>
-      </motion.section>
+        </div>
+      </section>
 
       {/* ========== STATS BAR ========== */}
       <section className="relative py-12 border-y border-ink-mid/20">
