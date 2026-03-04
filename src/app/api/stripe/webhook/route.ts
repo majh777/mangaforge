@@ -1,58 +1,46 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-function getStripe() {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
-  return new Stripe(key, { apiVersion: '2025-02-24.acacia' as Stripe.LatestApiVersion });
-}
 
 export async function POST(request: Request) {
-  const body = await request.text();
-  const sig = request.headers.get('stripe-signature') || '';
-
-  let event: Stripe.Event;
-
   try {
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
-    event = getStripe().webhooks.constructEvent(body, sig, webhookSecret);
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err);
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
-  }
+    const key = process.env.STRIPE_SECRET_KEY;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!key || !webhookSecret) return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });
 
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const { type, credits, userId, planId } = session.metadata || {};
+    const Stripe = (await import('stripe')).default;
+    const stripe = new Stripe(key, { apiVersion: '2025-02-24.acacia' as import('stripe').Stripe.LatestApiVersion });
 
-      if (type === 'credit_pack' && credits && userId) {
-        // TODO: Add credits to user account in database
-        console.log(`💰 Credits purchased: ${credits} credits for user ${userId}`);
+    const body = await request.text();
+    const sig = request.headers.get('stripe-signature') || '';
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+    } catch {
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+    }
+
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const metadata = (session as unknown as Record<string, unknown>).metadata as Record<string, string> | undefined;
+        if (metadata?.type === 'credit_pack') {
+          console.log(`💰 Credits purchased: ${metadata.credits} for user ${metadata.userId}`);
+        }
+        if (metadata?.type === 'subscription') {
+          console.log(`🔥 Subscription activated: ${metadata.planId} for user ${metadata.userId}`);
+        }
+        break;
       }
-
-      if (type === 'subscription' && planId && userId) {
-        // TODO: Activate subscription and add monthly credits
-        console.log(`🔥 Subscription activated: ${planId} for user ${userId}`);
+      case 'customer.subscription.deleted':
+      case 'invoice.payment_failed': {
+        console.log(`⚠️ Event: ${event.type}`);
+        break;
       }
-      break;
     }
 
-    case 'customer.subscription.updated':
-    case 'customer.subscription.deleted': {
-      const sub = event.data.object as Stripe.Subscription;
-      console.log(`📋 Subscription ${event.type}: ${sub.id}`);
-      // TODO: Update user subscription status in database
-      break;
-    }
-
-    case 'invoice.payment_failed': {
-      const invoice = event.data.object as Stripe.Invoice;
-      console.log(`⚠️ Payment failed: ${invoice.id}`);
-      // TODO: Notify user, downgrade if needed
-      break;
-    }
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error('Webhook error:', error);
+    return NextResponse.json({ error: 'Webhook failed' }, { status: 500 });
   }
-
-  return NextResponse.json({ received: true });
 }

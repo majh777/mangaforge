@@ -1,11 +1,4 @@
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
-function getStripe() {
-  const key = process.env.STRIPE_SECRET_KEY;
-  if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
-  return new Stripe(key, { apiVersion: '2025-02-24.acacia' as Stripe.LatestApiVersion });
-}
 
 const CREDIT_PACKS = {
   spark: { credits: 40, price: 499, name: 'Spark Pack — 40 Credits' },
@@ -23,6 +16,12 @@ const SUBSCRIPTIONS = {
 
 export async function POST(request: Request) {
   try {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });
+
+    const Stripe = (await import('stripe')).default;
+    const stripe = new Stripe(key, { apiVersion: '2025-02-24.acacia' as import('stripe').Stripe.LatestApiVersion });
+
     const { type, packId, userId } = await request.json();
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
@@ -30,31 +29,21 @@ export async function POST(request: Request) {
       const pack = CREDIT_PACKS[packId as keyof typeof CREDIT_PACKS];
       if (!pack) return NextResponse.json({ error: 'Invalid pack' }, { status: 400 });
 
-      const session = await getStripe().checkout.sessions.create({
+      const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
         line_items: [{
           price_data: {
             currency: 'usd',
-            product_data: {
-              name: pack.name,
-              description: `${pack.credits} credits for MangaForge`,
-              images: ['https://mangaforge.ai/og-image.png'],
-            },
+            product_data: { name: pack.name, description: `${pack.credits} credits for MangaForge` },
             unit_amount: pack.price,
           },
           quantity: 1,
         }],
-        metadata: {
-          type: 'credit_pack',
-          packId,
-          credits: pack.credits.toString(),
-          userId: userId || '',
-        },
+        metadata: { type: 'credit_pack', packId, credits: pack.credits.toString(), userId: userId || '' },
         success_url: `${baseUrl}/settings?credits=purchased&pack=${packId}`,
         cancel_url: `${baseUrl}/settings?credits=cancelled`,
       });
-
       return NextResponse.json({ url: session.url });
     }
 
@@ -62,37 +51,22 @@ export async function POST(request: Request) {
       const plan = SUBSCRIPTIONS[packId as keyof typeof SUBSCRIPTIONS];
       if (!plan) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
 
-      const product = await getStripe().products.create({
-        name: plan.name,
-        description: `${plan.credits} credits/month + premium features`,
-      });
+      const product = await stripe.products.create({ name: plan.name, description: `${plan.credits} credits/month` });
+      const price = await stripe.prices.create({ product: product.id, unit_amount: plan.price, currency: 'usd', recurring: { interval: plan.interval } });
 
-      const price = await getStripe().prices.create({
-        product: product.id,
-        unit_amount: plan.price,
-        currency: 'usd',
-        recurring: { interval: plan.interval },
-      });
-
-      const session = await getStripe().checkout.sessions.create({
+      const session = await stripe.checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
         line_items: [{ price: price.id, quantity: 1 }],
-        metadata: {
-          type: 'subscription',
-          planId: packId,
-          credits: plan.credits.toString(),
-          userId: userId || '',
-        },
+        metadata: { type: 'subscription', planId: packId, credits: plan.credits.toString(), userId: userId || '' },
         success_url: `${baseUrl}/settings?sub=active&plan=${packId}`,
         cancel_url: `${baseUrl}/settings?sub=cancelled`,
       });
-
       return NextResponse.json({ url: session.url });
     }
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Stripe error:', error);
     return NextResponse.json({ error: 'Stripe checkout failed' }, { status: 500 });
   }
