@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 interface TypewriterTextProps {
-  texts: string[];
+  texts?: string[];
   speed?: number;
   deleteSpeed?: number;
   pauseTime?: number;
@@ -12,8 +12,16 @@ interface TypewriterTextProps {
   stopped?: boolean;
 }
 
+const DEFAULT_TEXTS = [
+  'A wandering samurai in a world where music is magic...',
+  'Twin sisters separated at birth discover they have opposing superpowers...',
+  'A detective who can taste lies investigates a murder at a cooking competition...',
+  'The last dragon hatches in a cyberpunk megacity...',
+  'A shy librarian discovers books are portals to the worlds they describe...',
+];
+
 export function TypewriterText({
-  texts,
+  texts = DEFAULT_TEXTS,
   speed = 50,
   deleteSpeed = 30,
   pauseTime = 2000,

@@ -1,298 +1,406 @@
 'use client';
 
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { InkParticles } from '@/components/ink-particles';
 import { TypewriterText } from '@/components/typewriter-text';
 import { COMIC_STYLES } from '@/lib/styles';
 
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.15 } },
-};
+const VoxelBackground = dynamic(() => import('@/components/voxel-background'), { ssr: false });
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
-};
-
-const PRICING = [
-  { name: 'Free', price: '$0', credits: '20', features: ['1 project', 'Watermarked exports', 'Community access'], cta: 'Start Free', highlight: false },
-  { name: 'Starter', price: '$9.99', credits: '100', features: ['3 projects', 'No watermark', 'Store access', 'All styles'], cta: 'Get Started', highlight: false },
-  { name: 'Pro', price: '$24.99', credits: '300', features: ['Unlimited projects', 'Priority queue', 'Analytics dashboard', 'Style remixing', 'Bulk export'], cta: 'Go Pro', highlight: true },
-  { name: 'Unlimited', price: '$49.99', credits: '1,000', features: ['Everything in Pro', 'API access', 'White-label export', 'Bulk generation', 'Custom styles'], cta: 'Unleash', highlight: false },
+const FEATURES = [
+  { icon: '🧬', title: 'AI Story Engine', desc: 'DeepSeek V3.2 writes multi-arc narratives with hidden overarching plots that unfold across volumes.' },
+  { icon: '🎨', title: 'NanoBanana 2 Art', desc: 'State-of-the-art manga generation at $0.02/page. Professional screentones, speed lines, and panel layouts.' },
+  { icon: '🔥', title: 'Hook Engine', desc: '10 chapter-end hook types engineered to make you say "just one more chapter" every single time.' },
+  { icon: '💬', title: 'Living Characters', desc: '10-model personality matrix makes every character feel real. Chat with them between chapters.' },
+  { icon: '🌍', title: '16+ Languages', desc: 'Create manga in any language. Programmatic text overlay ensures perfect rendering everywhere.' },
+  { icon: '🏪', title: 'Creator Marketplace', desc: 'Publish and sell your manga. 70/30 creator-platform split. Build an audience and earn.' },
 ];
 
-function HeroSection() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 150]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+const STATS = [
+  { value: '12', label: 'Comic Styles', suffix: '' },
+  { value: '0.02', label: 'Per Page', suffix: '$' },
+  { value: '16', label: 'Languages', suffix: '+' },
+  { value: '10', label: 'Hook Types', suffix: '' },
+];
+
+const TESTIMONIALS = [
+  { name: 'Yuki T.', text: 'I published my first manga volume in 3 days. It would have taken me years to draw.', avatar: '🎌' },
+  { name: 'Marcus R.', text: 'The character chat feature is insane. My protagonist feels like a real person.', avatar: '🎭' },
+  { name: 'Ava C.', text: 'I can\'t stop hitting "Forge Next Chapter." The cliffhangers are genuinely addicting.', avatar: '📖' },
+];
+
+const PRICING = [
+  { tier: 'Free', price: '$0', credits: '10', features: ['1 project', 'Standard quality', 'Watermarked exports', '20 chat messages/mo'], cta: 'Start Free', highlight: false },
+  { tier: 'Starter', price: '$9.99', credits: '100', features: ['5 projects', 'High quality', 'Clean exports', 'Basic character chat'], cta: 'Get Started', highlight: false },
+  { tier: 'Pro', price: '$24.99', credits: '300', features: ['Unlimited projects', 'Ultra quality', 'Priority queue', 'Unlimited chat', 'Analytics'], cta: 'Go Pro', highlight: true },
+  { tier: 'Unlimited', price: '$49.99', credits: '800', features: ['Everything in Pro', 'Dedicated capacity', 'Custom style training', 'API access', 'Early features'], cta: 'Go Unlimited', highlight: false },
+];
+
+export default function HomePage() {
+  const { scrollYProgress } = useScroll();
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95]);
 
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <main className="min-h-screen bg-ink-void relative overflow-hidden">
+      <VoxelBackground />
       <InkParticles />
 
-      {/* Gradient mesh */}
-      <div className="absolute inset-0 gradient-mesh" />
-
-      {/* Radial focus */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,var(--color-ink-void)_70%)]" />
-
-      <motion.div style={{ y, opacity }} className="relative z-10 text-center px-4 max-w-5xl mx-auto">
-        {/* Logo / Title */}
+      {/* ========== HERO ========== */}
+      <motion.section
+        style={{ opacity: heroOpacity, scale: heroScale }}
+        className="relative min-h-screen flex flex-col items-center justify-center text-center px-4"
+      >
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h1 className="font-[family-name:var(--font-display)] text-6xl sm:text-7xl md:text-8xl lg:text-9xl tracking-tight mb-2">
-            <span className="bg-gradient-to-r from-paper-warm via-sakura-pink to-neon-cyan bg-clip-text text-transparent">
+          <h1 className="font-[family-name:var(--font-display)] text-6xl md:text-8xl lg:text-9xl font-black leading-none mb-4">
+            <span className="bg-gradient-to-r from-sakura-pink via-[#FF8FAB] to-neon-cyan bg-clip-text text-transparent">
               MangaForge
             </span>
           </h1>
-          <motion.div
-            className="h-1 mx-auto rounded-full bg-gradient-to-r from-transparent via-sakura-pink to-transparent"
-            initial={{ width: 0 }}
-            animate={{ width: '60%' }}
-            transition={{ delay: 0.8, duration: 1, ease: [0.22, 1, 0.36, 1] }}
-          />
-        </motion.div>
-
-        {/* Tagline */}
-        <motion.p
-          className="mt-8 text-xl sm:text-2xl md:text-3xl text-ink-light font-[family-name:var(--font-heading)] font-light"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-        >
-          Where Stories Come Alive
-        </motion.p>
-
-        {/* Typewriter prompt examples */}
-        <motion.div
-          className="mt-6 text-lg text-ink-light/60 italic h-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-        >
-          <TypewriterText
-            texts={[
-              'A wandering samurai in a world where music is magic…',
-              'Two rival academy students discover they share the same curse…',
-              'A detective in Neo-Tokyo solves crimes by entering dreams…',
-              'An empress summons stone golems to defend her kingdom…',
-              'A chef who cooks hope in a post-apocalyptic wasteland…',
-            ]}
-          />
-        </motion.div>
-
-        {/* CTA */}
-        <motion.div
-          className="mt-12"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-        >
-          <Link
-            href="/create"
-            className="group relative inline-flex items-center gap-3 px-10 py-5 rounded-2xl bg-sakura-pink text-paper-pure font-[family-name:var(--font-heading)] font-semibold text-xl sakura-glow-pulse transition-all duration-300 hover:scale-105 hover:bg-sakura-soft"
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+            className="text-xl md:text-2xl text-paper-warm/80 mb-3 font-[family-name:var(--font-body)]"
           >
-            <span className="relative z-10">Start Creating</span>
-            <svg className="w-6 h-6 relative z-10 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </Link>
-          <p className="mt-4 text-sm text-ink-light/50">No credit card required · 20 free credits</p>
-        </motion.div>
-      </motion.div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        animate={{ y: [0, 10, 0] }}
-        transition={{ repeat: Infinity, duration: 2 }}
-      >
-        <svg className="w-6 h-6 text-ink-light/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
-      </motion.div>
-    </section>
-  );
-}
-
-function HowItWorks() {
-  const steps = [
-    { icon: '✍️', title: 'Prompt', desc: 'Describe your story in any language. A single sentence or a detailed brief — the AI understands both.' },
-    { icon: '⚒️', title: 'Forge', desc: 'Watch your manga come alive page by page. AI generates art, dialogue, and panel layouts in real-time.' },
-    { icon: '📖', title: 'Read & Share', desc: 'Read your creation in a beautiful reader. Export, publish to the store, or share with the world.' },
-  ];
-
-  return (
-    <section className="relative py-32 px-4">
-      <div className="max-w-6xl mx-auto">
-        <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }}>
-          <motion.h2 variants={fadeUp} className="font-[family-name:var(--font-heading)] text-4xl md:text-5xl text-center mb-4">
-            Three Steps to <span className="text-sakura-pink">Your Manga</span>
-          </motion.h2>
-          <motion.p variants={fadeUp} className="text-ink-light text-center mb-20 text-lg max-w-2xl mx-auto">
-            Complex AI orchestration hidden behind effortless simplicity
+            Where Stories Come Alive
           </motion.p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.6 }}
+            transition={{ delay: 0.8 }}
+            className="text-sm md:text-base text-ink-light italic mb-10 h-8"
+          >
+            <TypewriterText />
+          </motion.div>
+        </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {steps.map((step, i) => (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1, duration: 0.6, type: 'spring' }}
+        >
+          <Link href="/create">
+            <button className="group relative px-12 py-5 rounded-2xl bg-sakura-pink text-paper-pure font-[family-name:var(--font-heading)] font-bold text-xl overflow-hidden sakura-glow-pulse hover:scale-105 transition-transform">
+              <span className="relative z-10 flex items-center gap-3">
+                Start Creating
+                <motion.span animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>→</motion.span>
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-sakura-pink to-[#FF8FAB] opacity-0 group-hover:opacity-100 transition-opacity" />
+            </button>
+          </Link>
+          <p className="mt-4 text-xs text-ink-light/50">No credit card required · 10 free credits</p>
+        </motion.div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          className="absolute bottom-10"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          <svg className="w-6 h-6 text-ink-light/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </motion.div>
+      </motion.section>
+
+      {/* ========== STATS BAR ========== */}
+      <section className="relative py-12 border-y border-ink-mid/20">
+        <div className="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {STATS.map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="text-center"
+            >
+              <div className="font-[family-name:var(--font-display)] text-4xl md:text-5xl font-black text-paper-warm">
+                {s.suffix === '$' && <span className="text-neon-cyan text-2xl">$</span>}
+                {s.value}
+                {s.suffix === '+' && <span className="text-sakura-pink">+</span>}
+              </div>
+              <div className="text-sm text-ink-light mt-1">{s.label}</div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ========== HOW IT WORKS ========== */}
+      <section className="relative py-32 px-4">
+        <div className="max-w-5xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-20"
+          >
+            From <span className="text-neon-cyan">Idea</span> to <span className="text-sakura-pink">Manga</span> in Minutes
+          </motion.h2>
+
+          <div className="grid md:grid-cols-4 gap-8">
+            {[
+              { step: '01', title: 'Describe', desc: 'Type your story idea — from a single sentence to a detailed plot.', icon: '✍️' },
+              { step: '02', title: 'Choose', desc: 'Pick from 12 authentic comic styles — shōnen, manhwa, BD, and more.', icon: '🎨' },
+              { step: '03', title: 'Generate', desc: 'Watch your manga come to life page by page in real-time.', icon: '⚡' },
+              { step: '04', title: 'Share', desc: 'Publish to the marketplace or export for print.', icon: '🌟' },
+            ].map((item, i) => (
               <motion.div
-                key={step.title}
-                variants={fadeUp}
-                className="group glass-card p-8 text-center hover:border-sakura-pink/30 transition-all duration-500 hover:-translate-y-2"
+                key={item.step}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="relative text-center group"
               >
-                <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">{step.icon}</div>
-                <div className="text-sm font-mono text-neon-cyan mb-2">Step {i + 1}</div>
-                <h3 className="font-[family-name:var(--font-heading)] text-2xl mb-3">{step.title}</h3>
-                <p className="text-ink-light leading-relaxed">{step.desc}</p>
+                <div className="text-5xl mb-4">{item.icon}</div>
+                <div className="text-xs font-mono text-neon-cyan mb-2">{item.step}</div>
+                <h3 className="font-[family-name:var(--font-heading)] text-xl mb-2">{item.title}</h3>
+                <p className="text-sm text-ink-light">{item.desc}</p>
+                {i < 3 && (
+                  <div className="hidden md:block absolute top-8 -right-4 text-ink-mid/30 text-3xl">→</div>
+                )}
               </motion.div>
             ))}
           </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
+        </div>
+      </section>
 
-function StyleShowcase() {
-  return (
-    <section className="relative py-32 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
-          <motion.h2 variants={fadeUp} className="font-[family-name:var(--font-heading)] text-4xl md:text-5xl text-center mb-4">
-            Choose Your <span className="text-neon-cyan">Canvas</span>
-          </motion.h2>
-          <motion.p variants={fadeUp} className="text-ink-light text-center mb-16 text-lg max-w-2xl mx-auto">
-            12 meticulously crafted comic styles, each with dedicated AI art direction
-          </motion.p>
-        </motion.div>
-      </div>
-
-      {/* Horizontal scroll */}
-      <div className="flex gap-6 overflow-x-auto px-8 pb-8 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
-        {COMIC_STYLES.map((style, i) => (
-          <motion.div
-            key={style.id}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+      {/* ========== FEATURES ========== */}
+      <section className="relative py-32 px-4">
+        <div className="max-w-6xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            transition={{ delay: i * 0.05 }}
-            className={`snap-center shrink-0 w-72 glass-card overflow-hidden group cursor-pointer hover:-translate-y-2 transition-all duration-500`}
+            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-4"
           >
-            {/* Gradient header */}
-            <div className={`h-40 bg-gradient-to-br ${style.gradient} flex items-center justify-center relative overflow-hidden`}>
-              <span className="text-6xl group-hover:scale-125 transition-transform duration-500">{style.emoji}</span>
-              <div className="absolute inset-0 bg-gradient-to-t from-ink-deep/80 to-transparent" />
-            </div>
-            <div className="p-5">
-              <h3 className="font-[family-name:var(--font-heading)] text-lg font-semibold mb-1">{style.name}</h3>
-              <p className="text-ink-light text-sm mb-3 line-clamp-2">{style.description}</p>
-              <div className="flex items-center gap-2 text-xs text-ink-light/60">
-                <span className="px-2 py-0.5 rounded-full bg-ink-wash">{style.colorMode === 'bw' ? 'B&W' : 'Color'}</span>
-                <span className="px-2 py-0.5 rounded-full bg-ink-wash">
-                  {style.readingDirection === 'rtl' ? 'RTL' : style.readingDirection === 'vertical' ? 'Scroll' : 'LTR'}
-                </span>
-              </div>
-              <p className="mt-2 text-xs text-ink-light/40 italic">{style.references}</p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function PricingSection() {
-  return (
-    <section className="relative py-32 px-4">
-      <div className="max-w-6xl mx-auto">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
-          <motion.h2 variants={fadeUp} className="font-[family-name:var(--font-heading)] text-4xl md:text-5xl text-center mb-4">
-            Simple, <span className="text-gold-premium">Fair</span> Pricing
+            Built <span className="text-sakura-pink">Different</span>
           </motion.h2>
-          <motion.p variants={fadeUp} className="text-ink-light text-center mb-16 text-lg max-w-2xl mx-auto">
-            Start free. Scale when your creative appetite grows.
-          </motion.p>
+          <p className="text-center text-ink-light mb-20 max-w-xl mx-auto">Not another AI toy. A production-grade creative platform.</p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {PRICING.map((tier) => (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {FEATURES.map((f, i) => (
               <motion.div
-                key={tier.name}
-                variants={fadeUp}
-                className={`glass-card p-6 relative overflow-hidden transition-all duration-500 hover:-translate-y-2 ${
-                  tier.highlight
-                    ? 'border-sakura-pink/40 ring-1 ring-sakura-pink/20'
-                    : ''
+                key={f.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="glass-card p-6 group hover:border-sakura-pink/30 transition-colors"
+              >
+                <div className="text-4xl mb-4">{f.icon}</div>
+                <h3 className="font-[family-name:var(--font-heading)] text-lg mb-2 group-hover:text-sakura-pink transition-colors">{f.title}</h3>
+                <p className="text-sm text-ink-light leading-relaxed">{f.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========== STYLE SHOWCASE ========== */}
+      <section className="relative py-32 px-4">
+        <div className="max-w-6xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-4"
+          >
+            12 Authentic <span className="text-neon-cyan">Styles</span>
+          </motion.h2>
+          <p className="text-center text-ink-light mb-16">Each with authentic reading direction, page layout, and visual language.</p>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {COMIC_STYLES.map((style, i) => (
+              <motion.div
+                key={style.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="group cursor-pointer"
+              >
+                <div
+                  className="relative rounded-xl overflow-hidden border border-ink-mid/30 hover:border-sakura-pink/50 transition-all duration-300"
+                  style={{ background: `linear-gradient(135deg, ${style.accentColor}15, transparent)` }}
+                >
+                  <div className="h-32 flex items-center justify-center text-5xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
+                    {style.icon}
+                  </div>
+                  <div className="p-3 bg-ink-deep/80 backdrop-blur">
+                    <h4 className="font-[family-name:var(--font-heading)] text-sm">{style.name}</h4>
+                    <p className="text-xs text-ink-light">{style.colorMode} · {style.readingDirection}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========== TESTIMONIALS ========== */}
+      <section className="relative py-32 px-4">
+        <div className="max-w-4xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-16"
+          >
+            Creators <span className="text-sakura-pink">Love</span> It
+          </motion.h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((t, i) => (
+              <motion.div
+                key={t.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="glass-card p-6"
+              >
+                <p className="text-sm text-ink-light italic mb-4">&ldquo;{t.text}&rdquo;</p>
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">{t.avatar}</div>
+                  <span className="text-sm font-medium">{t.name}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========== PRICING ========== */}
+      <section className="relative py-32 px-4" id="pricing">
+        <div className="max-w-6xl mx-auto">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl text-center mb-4"
+          >
+            Simple <span className="text-gold-premium">Pricing</span>
+          </motion.h2>
+          <p className="text-center text-ink-light mb-16">Start free. Scale as you create.</p>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {PRICING.map((p, i) => (
+              <motion.div
+                key={p.tier}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`rounded-2xl p-6 border transition-all ${
+                  p.highlight
+                    ? 'border-sakura-pink/50 bg-sakura-pink/5 shadow-lg shadow-sakura-pink/10'
+                    : 'border-ink-mid/30 bg-ink-deep/50'
                 }`}
               >
-                {tier.highlight && (
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sakura-pink via-neon-cyan to-sakura-pink" />
+                {p.highlight && (
+                  <div className="text-xs font-mono text-sakura-pink mb-3">⭐ MOST POPULAR</div>
                 )}
-                <div className="text-sm text-ink-light mb-1 font-mono">{tier.name}</div>
+                <h3 className="font-[family-name:var(--font-heading)] text-xl mb-1">{p.tier}</h3>
                 <div className="flex items-baseline gap-1 mb-1">
-                  <span className="font-[family-name:var(--font-heading)] text-4xl font-bold">{tier.price}</span>
-                  {tier.price !== '$0' && <span className="text-ink-light text-sm">/mo</span>}
+                  <span className="text-3xl font-black">{p.price}</span>
+                  {p.price !== '$0' && <span className="text-sm text-ink-light">/mo</span>}
                 </div>
-                <div className="text-neon-cyan text-sm mb-6">⚡ {tier.credits} credits/month</div>
+                <div className="text-sm text-neon-cyan mb-6">⚡ {p.credits} credits/mo</div>
                 <ul className="space-y-2 mb-8">
-                  {tier.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-ink-light">
-                      <span className="text-forest-green mt-0.5">✓</span> {f}
+                  {p.features.map(f => (
+                    <li key={f} className="text-sm text-ink-light flex items-start gap-2">
+                      <span className="text-sakura-pink mt-0.5">✓</span> {f}
                     </li>
                   ))}
                 </ul>
-                <button
-                  className={`w-full py-3 rounded-xl font-[family-name:var(--font-heading)] font-semibold transition-all duration-300 ${
-                    tier.highlight
-                      ? 'bg-sakura-pink text-paper-pure sakura-glow hover:bg-sakura-soft'
-                      : 'bg-ink-wash text-paper-warm hover:bg-ink-mid border border-ink-mid'
-                  }`}
-                >
-                  {tier.cta}
+                <button className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
+                  p.highlight
+                    ? 'bg-sakura-pink text-paper-pure hover:bg-sakura-soft sakura-glow-pulse'
+                    : 'bg-ink-wash text-paper-warm hover:bg-ink-mid border border-ink-mid'
+                }`}>
+                  {p.cta}
                 </button>
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ========== FINAL CTA ========== */}
+      <section className="relative py-32 px-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          <h2 className="font-[family-name:var(--font-display)] text-4xl md:text-6xl font-black mb-6">
+            <span className="bg-gradient-to-r from-sakura-pink to-neon-cyan bg-clip-text text-transparent">
+              Your Story Awaits
+            </span>
+          </h2>
+          <p className="text-ink-light text-lg mb-10 max-w-md mx-auto">
+            Join thousands of creators turning imagination into manga.
+          </p>
+          <Link href="/create">
+            <button className="px-16 py-6 rounded-2xl bg-sakura-pink text-paper-pure font-[family-name:var(--font-heading)] font-bold text-2xl sakura-glow-pulse hover:scale-105 transition-transform">
+              ⚒️ Start Forging
+            </button>
+          </Link>
         </motion.div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-function Footer() {
-  return (
-    <footer className="border-t border-ink-mid/30 py-12 px-4">
-      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="font-[family-name:var(--font-display)] text-2xl bg-gradient-to-r from-paper-warm to-sakura-pink bg-clip-text text-transparent">
-          MangaForge
+      {/* ========== FOOTER ========== */}
+      <footer className="border-t border-ink-mid/20 py-16 px-4">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-4 gap-8">
+          <div>
+            <h3 className="font-[family-name:var(--font-heading)] text-lg text-sakura-pink mb-4">MangaForge</h3>
+            <p className="text-sm text-ink-light">AI-powered manga creation platform. From idea to published manga in minutes.</p>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-3 text-sm">Product</h4>
+            <ul className="space-y-2 text-sm text-ink-light">
+              <li><Link href="/create" className="hover:text-paper-warm transition-colors">Create</Link></li>
+              <li><Link href="/library" className="hover:text-paper-warm transition-colors">Library</Link></li>
+              <li><Link href="/store" className="hover:text-paper-warm transition-colors">Store</Link></li>
+              <li><Link href="#pricing" className="hover:text-paper-warm transition-colors">Pricing</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-3 text-sm">Company</h4>
+            <ul className="space-y-2 text-sm text-ink-light">
+              <li><a href="#" className="hover:text-paper-warm transition-colors">About</a></li>
+              <li><a href="#" className="hover:text-paper-warm transition-colors">Blog</a></li>
+              <li><a href="#" className="hover:text-paper-warm transition-colors">API</a></li>
+              <li><a href="#" className="hover:text-paper-warm transition-colors">Careers</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-3 text-sm">Legal</h4>
+            <ul className="space-y-2 text-sm text-ink-light">
+              <li><a href="#" className="hover:text-paper-warm transition-colors">Terms</a></li>
+              <li><a href="#" className="hover:text-paper-warm transition-colors">Privacy</a></li>
+              <li><a href="#" className="hover:text-paper-warm transition-colors">Content Policy</a></li>
+            </ul>
+          </div>
         </div>
-        <div className="flex gap-8 text-sm text-ink-light">
-          <a href="#" className="ink-underline hover:text-paper-warm transition-colors">About</a>
-          <a href="#" className="ink-underline hover:text-paper-warm transition-colors">Blog</a>
-          <a href="#" className="ink-underline hover:text-paper-warm transition-colors">API</a>
-          <a href="#" className="ink-underline hover:text-paper-warm transition-colors">Terms</a>
-          <a href="#" className="ink-underline hover:text-paper-warm transition-colors">Privacy</a>
+        <div className="max-w-6xl mx-auto mt-12 pt-8 border-t border-ink-mid/20 flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-ink-light/50">© 2026 MangaForge. Built by Palabre.ai</p>
+          <div className="flex gap-4 text-ink-light/50">
+            <a href="#" className="hover:text-paper-warm transition-colors text-lg">𝕏</a>
+            <a href="#" className="hover:text-paper-warm transition-colors text-lg">📱</a>
+            <a href="#" className="hover:text-paper-warm transition-colors text-lg">💬</a>
+          </div>
         </div>
-        <p className="text-xs text-ink-light/40">Built by Palabre.ai — Where Stories Come Alive</p>
-      </div>
-    </footer>
-  );
-}
-
-export default function LandingPage() {
-  return (
-    <main className="relative">
-      <HeroSection />
-      <HowItWorks />
-      <StyleShowcase />
-      <PricingSection />
-      <Footer />
+      </footer>
     </main>
   );
 }

@@ -193,7 +193,7 @@ export default function CreatePage() {
                 <div className="p-3 bg-ink-deep">
                   <div className="font-[family-name:var(--font-heading)] text-sm font-semibold truncate">{style.name}</div>
                   <div className="text-xs text-ink-light/60 mt-1">
-                    {style.colorMode === 'bw' ? 'B&W' : 'Color'} · {style.readingDirection === 'rtl' ? 'RTL' : style.readingDirection === 'vertical' ? 'Scroll' : 'LTR'}
+                    {style.colorMode} · {style.readingDirection === 'rtl' ? 'RTL' : style.readingDirection === 'vertical' ? 'Scroll' : 'LTR'}
                   </div>
                 </div>
               </motion.button>

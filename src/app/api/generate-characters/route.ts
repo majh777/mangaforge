@@ -1,69 +1,65 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { generateText } from '@/lib/ai';
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-    const { synopsis, style } = body;
+    const { synopsis, style } = await request.json();
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: 'Missing API key' }, { status: 500 });
-    }
+    const systemInstruction = `You are MangaForge's character creation engine. You design psychologically complex characters using a 10-model personality framework. Always respond in valid JSON.`;
 
-    const systemPrompt = `You are a master character designer for ${style} comics/manga. Based on the synopsis below, generate 4-6 compelling characters.
+    const userPrompt = `Based on this manga synopsis, create a cast of characters:
 
-Return a JSON array of character objects with EXACTLY this structure:
-[
-  {
-    "name": "Character Name",
-    "role": "protagonist" | "antagonist" | "supporting" | "minor",
-    "age": 25,
-    "bioShort": "2-3 sentence summary",
-    "bioFull": "3-5 paragraph full backstory with motivations, fears, and secrets",
-    "physicalDescription": "Detailed appearance for image generation",
-    "visualPrompt": "A detailed prompt optimized for AI image generation: full body portrait of [character], [style]-style art, [specific details about hair, eyes, clothing, accessories, pose, expression]",
-    "speechPattern": "How they talk — formal, casual, accent notes, catchphrases",
-    "personalityTraits": ["trait1", "trait2", "trait3", "trait4", "trait5"],
-    "relationships": []
-  }
-]
+SYNOPSIS: ${JSON.stringify(synopsis)}
+ART STYLE: ${style}
 
-Make characters diverse, compelling, and perfectly suited to ${style} storytelling. Each character should feel like they could carry their own story. Visual prompts should be specific enough for consistent AI image generation.`;
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            { role: 'user', parts: [{ text: `${systemPrompt}\n\nSynopsis:\n${JSON.stringify(synopsis)}` }] },
-          ],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.85,
-          },
-        }),
+Generate a JSON response with this exact structure:
+{
+  "characters": [
+    {
+      "name": "Character Name",
+      "role": "protagonist|antagonist|supporting|minor",
+      "age": 17,
+      "bioShort": "One-sentence character summary",
+      "bioFull": "2-3 paragraph detailed biography with backstory, motivations, and secrets",
+      "physicalDescription": "Detailed physical appearance for consistent art generation",
+      "visualPrompt": "A detailed image generation prompt for this character's portrait in ${style} art style",
+      "speechPattern": "How this character talks — cadence, vocabulary, quirks",
+      "personalityTraits": ["trait1", "trait2", "trait3", "trait4", "trait5"],
+      "relationships": ["relationship description with other characters"],
+      "personalityMatrix": {
+        "bigFive": { "openness": 75, "conscientiousness": 45, "extraversion": 80, "agreeableness": 60, "neuroticism": 35 },
+        "mbti": "ENFP",
+        "enneagram": "7w8",
+        "attachmentStyle": "secure",
+        "maslowLevel": "esteem",
+        "moralFoundations": { "care": 8, "fairness": 7, "loyalty": 9, "authority": 3, "sanctity": 4, "liberty": 9 },
+        "jungianArchetype": { "primary": "The Hero", "secondary": "The Rebel" },
+        "eq": { "selfAwareness": 6, "selfRegulation": 4, "motivation": 9, "empathy": 7, "socialSkills": 8 },
+        "defenseMechanisms": { "primary": "humor", "secondary": "sublimation" },
+        "loveLanguages": ["quality_time", "words_of_affirmation", "acts_of_service", "physical_touch", "receiving_gifts"]
       }
-    );
+    }
+  ]
+}
 
-    if (!response.ok) {
-      const err = await response.text();
-      console.error('Gemini API error:', err);
-      return NextResponse.json({ error: 'Character generation failed' }, { status: 500 });
+Create 3-5 characters minimum. Include at least one protagonist, one antagonist, and one supporting character. Make each character psychologically rich and distinct. The personality matrix must be internally consistent — a character's MBTI, Big Five, Enneagram, and defense mechanisms should all tell the same story.`;
+
+    const result = await generateText(userPrompt, systemInstruction);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(result);
+    } catch {
+      const jsonMatch = result.match(/\{[\s\S]*\}/);
+      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { characters: [] };
     }
 
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!text) {
-      return NextResponse.json({ error: 'No content generated' }, { status: 500 });
-    }
-
-    const characters = JSON.parse(text);
-    return NextResponse.json({ characters });
+    return NextResponse.json(parsed);
   } catch (error) {
     console.error('Character generation error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to generate characters' },
+      { status: 500 }
+    );
   }
 }

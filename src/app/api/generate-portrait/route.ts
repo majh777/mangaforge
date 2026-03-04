@@ -1,56 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { generateImage } from '@/lib/ai';
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-    const { visualPrompt, style } = body;
+    const { visualPrompt, style } = await request.json();
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: 'Missing API key' }, { status: 500 });
-    }
+    const fullPrompt = `Generate a manga character portrait in ${style || 'shōnen manga'} art style. Black and white with screentones. Professional manga quality, detailed ink work, expressive eyes, dynamic pose. Character: ${visualPrompt}. The image should be a bust/upper body portrait suitable for a character card. High contrast, clean linework, authentic manga aesthetics.`;
 
-    const imagePrompt = `Generate an image: Character portrait in ${style} art style. ${visualPrompt}. Professional quality, detailed, suitable for a manga/comic character card. Clean background or simple atmospheric background.`;
+    const imageData = await generateImage(fullPrompt);
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: imagePrompt }] }],
-          generationConfig: {
-            responseModalities: ['TEXT', 'IMAGE'],
-          },
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error('Image generation error:', err);
-      return NextResponse.json({ error: 'Image generation failed' }, { status: 500 });
-    }
-
-    const data = await response.json();
-    const parts = data.candidates?.[0]?.content?.parts;
-
-    if (!parts) {
-      return NextResponse.json({ error: 'No image generated' }, { status: 500 });
-    }
-
-    // Find the image part
-    for (const part of parts) {
-      if (part.inlineData) {
-        return NextResponse.json({
-          image: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
-        });
-      }
-    }
-
-    return NextResponse.json({ error: 'No image in response' }, { status: 500 });
+    return NextResponse.json({ image: imageData });
   } catch (error) {
     console.error('Portrait generation error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to generate portrait' },
+      { status: 500 }
+    );
   }
 }
