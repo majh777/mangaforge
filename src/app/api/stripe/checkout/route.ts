@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia' as Stripe.LatestApiVersion,
-});
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
+  return new Stripe(key, { apiVersion: '2025-02-24.acacia' as Stripe.LatestApiVersion });
+}
 
 const CREDIT_PACKS = {
   spark: { credits: 40, price: 499, name: 'Spark Pack — 40 Credits' },
@@ -28,7 +30,7 @@ export async function POST(request: Request) {
       const pack = CREDIT_PACKS[packId as keyof typeof CREDIT_PACKS];
       if (!pack) return NextResponse.json({ error: 'Invalid pack' }, { status: 400 });
 
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
         line_items: [{
@@ -60,19 +62,19 @@ export async function POST(request: Request) {
       const plan = SUBSCRIPTIONS[packId as keyof typeof SUBSCRIPTIONS];
       if (!plan) return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
 
-      const product = await stripe.products.create({
+      const product = await getStripe().products.create({
         name: plan.name,
         description: `${plan.credits} credits/month + premium features`,
       });
 
-      const price = await stripe.prices.create({
+      const price = await getStripe().prices.create({
         product: product.id,
         unit_amount: plan.price,
         currency: 'usd',
         recurring: { interval: plan.interval },
       });
 
-      const session = await stripe.checkout.sessions.create({
+      const session = await getStripe().checkout.sessions.create({
         mode: 'subscription',
         payment_method_types: ['card'],
         line_items: [{ price: price.id, quantity: 1 }],
