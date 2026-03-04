@@ -1,0 +1,185 @@
+@import "tailwindcss";
+
+/* ===== MangaForge Design System ===== */
+
+@theme {
+  /* Dark Mode (Primary) */
+  --color-ink-void: #0A0A0F;
+  --color-ink-deep: #14141F;
+  --color-ink-wash: #1E1E2E;
+  --color-ink-mid: #2A2A3E;
+  --color-ink-light: #8888AA;
+  --color-paper-warm: #F5F0E8;
+  --color-paper-pure: #FFFFFF;
+  --color-sakura-pink: #FF6B9D;
+  --color-sakura-soft: #FF8DB5;
+  --color-neon-cyan: #00F5FF;
+  --color-neon-cyan-glow: rgba(0, 245, 255, 0.15);
+  --color-gold-premium: #FFD700;
+  --color-manga-red: #E63946;
+  --color-forest-green: #2ECC71;
+
+  /* Light Mode */
+  --color-light-bg: #FAF8F5;
+  --color-light-surface: #FFFFFF;
+  --color-light-border: #E8E4DE;
+  --color-light-text: #1A1A2E;
+  --color-light-muted: #7A7A8E;
+
+  /* Fonts */
+  --font-display: "Dela Gothic One", serif;
+  --font-heading: "Outfit", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-manga: "Bangers", cursive;
+  --font-manga-jp: "M PLUS Rounded 1c", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-ink-void);
+  color: var(--color-paper-warm);
+  overflow-x: hidden;
+}
+
+/* Light mode */
+[data-theme="light"] body,
+.light body {
+  background: var(--color-light-bg);
+  color: var(--color-light-text);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-ink-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink-mid);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sakura-pink);
+}
+
+/* Selection */
+::selection {
+  background: rgba(255, 107, 157, 0.3);
+  color: var(--color-paper-pure);
+}
+
+/* Screentone overlay pattern */
+.screentone-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.03;
+  background-image: radial-gradient(circle, var(--color-ink-light) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+/* Gradient mesh background */
+.gradient-mesh {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(255, 107, 157, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0, 245, 255, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(255, 215, 0, 0.04) 0%, transparent 50%);
+}
+
+/* Neon glow effects */
+.neon-cyan-glow {
+  box-shadow:
+    0 0 5px rgba(0, 245, 255, 0.3),
+    0 0 20px rgba(0, 245, 255, 0.15),
+    0 0 40px rgba(0, 245, 255, 0.05);
+}
+
+.sakura-glow {
+  box-shadow:
+    0 0 5px rgba(255, 107, 157, 0.4),
+    0 0 20px rgba(255, 107, 157, 0.2),
+    0 0 40px rgba(255, 107, 157, 0.1);
+}
+
+.sakura-glow-pulse {
+  animation: sakuraPulse 2s ease-in-out infinite;
+}
+
+@keyframes sakuraPulse {
+  0%, 100% {
+    box-shadow:
+      0 0 5px rgba(255, 107, 157, 0.4),
+      0 0 20px rgba(255, 107, 157, 0.2),
+      0 0 40px rgba(255, 107, 157, 0.1);
+  }
+  50% {
+    box-shadow:
+      0 0 10px rgba(255, 107, 157, 0.6),
+      0 0 30px rgba(255, 107, 157, 0.3),
+      0 0 60px rgba(255, 107, 157, 0.15);
+  }
+}
+
+/* Ink brush stroke underline */
+.ink-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.ink-underline::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--color-sakura-pink);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ink-underline:hover::after {
+  transform: scaleX(1);
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(20, 20, 31, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(136, 136, 170, 0.1);
+  border-radius: 16px;
+}
+
+/* Manuscript page card */
+.manuscript-card {
+  background: linear-gradient(135deg, #F5F0E8 0%, #EDE8DC 100%);
+  color: #1A1A2E;
+  border-radius: 4px;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.1),
+    0 10px 30px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+}
+
+.manuscript-card::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 2px;
+  pointer-events: none;
+}
