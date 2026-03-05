@@ -30,20 +30,22 @@ export default function ChapterPage() {
 
   useEffect(() => {
     const configData = sessionStorage.getItem('mangaforge_config');
-    if (configData) {
-      const c = JSON.parse(configData);
-      setConfig(c);
-      const numPages = c.pagesPerChapter || 20;
-      setTotalPages(numPages);
-
-      const initialPages: PageData[] = Array.from({ length: numPages }, (_, i) => ({
-        pageNumber: i + 1,
-        imageUrl: null,
-        status: i === 0 ? 'generating' : 'queued',
-      }));
-      setPages(initialPages);
-      generatePages(numPages, c);
+    if (!configData) {
+      // No config — use sensible defaults so the page still works
+      console.warn('No mangaforge_config found, using defaults');
     }
+    const c = configData ? JSON.parse(configData) : { style: 'shonen_manga', pagesPerChapter: 8, panelsPerPage: 6 };
+    setConfig(c);
+    const numPages = c.pagesPerChapter || 8;
+    setTotalPages(numPages);
+
+    const initialPages: PageData[] = Array.from({ length: numPages }, (_, i) => ({
+      pageNumber: i + 1,
+      imageUrl: null,
+      status: i === 0 ? 'generating' : 'queued',
+    }));
+    setPages(initialPages);
+    generatePages(numPages, c);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -269,7 +269,18 @@ export default function CharactersPage() {
   const handleBeginChapter = () => {
     console.log('Begin Chapter clicked, chars:', characters.length);
     sessionStorage.setItem('mangaforge_characters', JSON.stringify(characters));
-    router.push('/create/chapter');
+    // Force navigation with window.location as fallback
+    try {
+      router.push('/create/chapter');
+    } catch {
+      window.location.href = '/create/chapter';
+    }
+    // Fallback: if router.push doesn't navigate within 500ms, force it
+    setTimeout(() => {
+      if (window.location.pathname !== '/create/chapter') {
+        window.location.href = '/create/chapter';
+      }
+    }, 500);
   };
 
   const canBegin = characters.length >= 1;
@@ -330,15 +341,13 @@ export default function CharactersPage() {
               ))}
             </div>
 
-            <motion.div
-              className="text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: characters.length * 0.3 + 0.5 }}
+            <div
+              className="text-center relative z-20 mt-8"
             >
               <button
                 onClick={handleBeginChapter}
                 disabled={!canBegin}
+                style={{ position: 'relative', zIndex: 50, cursor: canBegin ? 'pointer' : 'not-allowed' }}
                 className={`px-16 py-6 rounded-2xl font-[family-name:var(--font-heading)] font-bold text-2xl transition-all duration-500 ${
                   canBegin
                     ? 'btn-primary glow-pulse-cta hover:scale-105 active:scale-95'
@@ -348,7 +357,7 @@ export default function CharactersPage() {
                 📖 Begin Chapter 1
               </button>
               <p className="mt-4 text-sm text-ink-light/30">&#9889; ~8 credits per chapter</p>
-            </motion.div>
+            </div>
           </>
         )}
       </div>
