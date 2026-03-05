@@ -51,7 +51,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MangaForge — AI-Powered Manga & Comics Creation",
+  title: "InkForge — Where Stories Become Art",
   description:
     "Create stunning manga, comics, manhwa, and webtoons with AI. From prompt to published — forge your stories into art.",
   keywords: [
@@ -61,6 +61,7 @@ export const metadata: Metadata = {
     "webtoon creator",
     "manhwa",
     "AI art",
+    "InkForge",
   ],
 };
 
@@ -76,7 +77,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen antialiased">
-        <div className="screentone-overlay" />
+        <div className="grain-overlay" />
         <ErrorBoundary>
           <Providers>{children}</Providers>
         </ErrorBoundary>

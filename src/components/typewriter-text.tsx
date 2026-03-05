@@ -63,7 +63,7 @@ export function TypewriterText({
   return (
     <span className={className}>
       {displayText}
-      <span className="animate-pulse text-neon-cyan">|</span>
+      <span className="animate-pulse text-violet">|</span>
     </span>
   );
 }

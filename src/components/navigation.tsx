@@ -3,13 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export function Navigation() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Don't show nav on reader or chat (they have their own)
   if (pathname.startsWith('/read') || pathname.startsWith('/chat')) return null;
 
   const links = [
@@ -22,10 +20,12 @@ export function Navigation() {
   const isActive = (href: string) => pathname.startsWith(href);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-ink-void/80 backdrop-blur-xl border-b border-ink-mid/20">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="font-[family-name:var(--font-heading)] text-sakura-pink text-lg hover:text-sakura-soft transition-colors">
-          MangaForge
+        <Link href="/" className="flex items-center gap-2 group">
+          <span className="font-[family-name:var(--font-display)] text-lg gradient-text group-hover:opacity-80 transition-opacity">
+            InkForge
+          </span>
         </Link>
 
         {/* Desktop */}
@@ -34,22 +34,22 @@ export function Navigation() {
             <Link
               key={l.href}
               href={l.href}
-              className={`transition-colors ${isActive(l.href) ? 'text-paper-warm' : 'text-ink-light hover:text-paper-warm'}`}
+              className={`transition-colors relative ${
+                isActive(l.href) ? 'text-paper-warm' : 'text-ink-light hover:text-paper-warm'
+              }`}
             >
               {l.label}
+              {isActive(l.href) && (
+                <span className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-violet to-pink opacity-60" />
+              )}
             </Link>
           ))}
           <div className="h-4 w-px bg-ink-mid/30" />
-          <Link href="/settings" className="flex items-center gap-1.5 text-neon-cyan font-mono text-sm">
-            <motion.span
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-            >
-              ⚡
-            </motion.span>
+          <Link href="/settings" className="flex items-center gap-1.5 text-cyan font-mono text-sm">
+            <span className="animate-pulse-soft">&#9889;</span>
             <span>247</span>
           </Link>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sakura-pink to-neon-cyan flex items-center justify-center text-xs font-bold">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet to-pink flex items-center justify-center text-xs font-bold text-white">
             C
           </div>
         </div>
@@ -67,31 +67,24 @@ export function Navigation() {
       </div>
 
       {/* Mobile menu */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-ink-mid/20 bg-ink-deep"
-          >
-            <div className="p-4 space-y-2">
-              {links.map(l => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`block px-4 py-3 rounded-xl text-sm transition-colors ${
-                    isActive(l.href) ? 'bg-ink-wash text-paper-warm' : 'text-ink-light hover:bg-ink-wash'
-                  }`}
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {mobileOpen && (
+        <div className="md:hidden glass-panel mx-4 mb-4 mt-1 rounded-xl overflow-hidden">
+          <div className="p-3 space-y-1">
+            {links.map(l => (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setMobileOpen(false)}
+                className={`block px-4 py-3 rounded-xl text-sm transition-colors ${
+                  isActive(l.href) ? 'bg-violet/10 text-paper-warm border border-violet/20' : 'text-ink-light hover:bg-ink-wash'
+                }`}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

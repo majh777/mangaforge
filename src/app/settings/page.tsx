@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { Navigation } from '@/components/navigation';
 
 const CREDIT_PACKS = [
   { id: 'spark', name: 'Spark', credits: 40, bonus: 0, price: '$4.99' },
@@ -51,31 +52,20 @@ export default function SettingsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-ink-void">
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-ink-void/80 backdrop-blur-xl border-b border-ink-mid/20">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="font-[family-name:var(--font-heading)] text-sakura-pink text-lg">MangaForge</Link>
-          <div className="flex items-center gap-6 text-sm">
-            <Link href="/create" className="text-ink-light hover:text-paper-warm transition-colors">Create</Link>
-            <Link href="/library" className="text-ink-light hover:text-paper-warm transition-colors">Library</Link>
-            <Link href="/store" className="text-ink-light hover:text-paper-warm transition-colors">Store</Link>
-            <div className="flex items-center gap-1 text-neon-cyan font-mono">⚡ 247</div>
-          </div>
-        </div>
-      </nav>
+    <main className="min-h-screen bg-ink-void mesh-gradient">
+      <Navigation />
 
       <div className="max-w-5xl mx-auto px-4 pt-24 pb-32">
-        <h1 className="font-[family-name:var(--font-heading)] text-3xl mb-8">Settings</h1>
+        <h1 className="font-[family-name:var(--font-heading)] text-3xl font-light mb-8">Settings</h1>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-ink-deep rounded-xl p-1 mb-10 w-fit">
+        <div className="flex gap-1 glass rounded-xl p-1 mb-10 w-fit">
           {(['credits', 'subscription', 'profile', 'analytics'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-5 py-2.5 rounded-lg text-sm capitalize transition-all ${
-                activeTab === tab ? 'bg-ink-wash text-paper-warm font-medium' : 'text-ink-light hover:text-paper-warm'
+                activeTab === tab ? 'bg-violet/15 text-paper-warm font-medium border border-violet/10' : 'text-ink-light/60 hover:text-paper-warm'
               }`}
             >
               {tab}
@@ -86,29 +76,27 @@ export default function SettingsPage() {
         {/* Credits Tab */}
         {activeTab === 'credits' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            {/* Current Balance */}
             <div className="glass-card p-8 mb-10">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-ink-light text-sm mb-1">Current Balance</p>
+                  <p className="text-ink-light/40 text-sm mb-1">Current Balance</p>
                   <div className="flex items-center gap-3">
-                    <span className="font-[family-name:var(--font-display)] text-5xl font-black text-neon-cyan">247</span>
-                    <span className="text-2xl">⚡</span>
+                    <span className="font-[family-name:var(--font-display)] text-5xl font-black gradient-text">247</span>
+                    <span className="text-2xl">&#9889;</span>
                   </div>
-                  <p className="text-xs text-ink-light/50 mt-2">~30 chapters remaining at your pace</p>
+                  <p className="text-xs text-ink-light/30 mt-2">~30 chapters remaining at your pace</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-ink-light/50">This month&apos;s usage</p>
-                  <p className="text-lg font-mono text-paper-warm">53 credits used</p>
-                  <div className="w-32 h-2 rounded-full bg-ink-deep mt-2 overflow-hidden">
-                    <div className="w-[18%] h-full rounded-full bg-neon-cyan" />
+                  <p className="text-xs text-ink-light/30">This month&apos;s usage</p>
+                  <p className="text-lg font-mono text-paper-warm/80">53 credits used</p>
+                  <div className="w-32 h-1.5 rounded-full bg-ink-deep mt-2 overflow-hidden">
+                    <div className="w-[18%] h-full rounded-full bg-gradient-to-r from-violet to-pink" />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Credit Packs */}
-            <h3 className="font-[family-name:var(--font-heading)] text-xl mb-6">Buy Credits</h3>
+            <h3 className="font-[family-name:var(--font-heading)] text-xl font-light mb-6">Buy Credits</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {CREDIT_PACKS.map((pack, i) => (
                 <motion.div
@@ -116,22 +104,21 @@ export default function SettingsPage() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08 }}
-                  className={`rounded-xl p-5 border transition-all cursor-pointer hover:border-sakura-pink/40 ${
-                    pack.id === 'blaze' ? 'border-gold-premium/40 bg-gold-premium/5' : 'border-ink-mid/30 bg-ink-deep/50'
+                  className={`glass-card-hover p-5 cursor-pointer ${
+                    pack.id === 'blaze' ? 'gradient-border-glow' : ''
                   }`}
                   onClick={() => handleBuyPack(pack.id)}
                 >
-                  {pack.id === 'blaze' && <div className="text-xs text-gold-premium font-mono mb-2">⭐ BEST VALUE</div>}
-                  <h4 className="font-[family-name:var(--font-heading)] text-lg">{pack.name}</h4>
-                  <div className="text-2xl font-black text-neon-cyan my-2">⚡ {pack.credits}</div>
-                  {pack.bonus > 0 && <div className="text-xs text-green-400 mb-2">+{pack.bonus} bonus</div>}
+                  {pack.id === 'blaze' && <div className="text-xs text-gold-premium font-mono mb-2">BEST VALUE</div>}
+                  <h4 className="font-[family-name:var(--font-heading)] text-lg font-medium">{pack.name}</h4>
+                  <div className="text-2xl font-black gradient-text my-2">&#9889; {pack.credits}</div>
+                  {pack.bonus > 0 && <div className="text-xs text-forest-green mb-2">+{pack.bonus} bonus</div>}
                   <div className="text-lg font-bold">{pack.price}</div>
                 </motion.div>
               ))}
             </div>
 
-            {/* Usage Breakdown */}
-            <h3 className="font-[family-name:var(--font-heading)] text-xl mt-12 mb-6">Cost Reference</h3>
+            <h3 className="font-[family-name:var(--font-heading)] text-xl font-light mt-12 mb-6">Cost Reference</h3>
             <div className="glass-card p-6">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 {[
@@ -144,9 +131,9 @@ export default function SettingsPage() {
                   { action: 'Chat (10 messages)', cost: '1' },
                   { action: 'Export (PDF/CBZ)', cost: '0' },
                 ].map(item => (
-                  <div key={item.action} className="flex items-center justify-between bg-ink-wash/50 rounded-lg px-3 py-2">
-                    <span className="text-ink-light">{item.action}</span>
-                    <span className="font-mono text-neon-cyan">⚡{item.cost}</span>
+                  <div key={item.action} className="flex items-center justify-between bg-ink-wash/30 rounded-lg px-3 py-2">
+                    <span className="text-ink-light/50">{item.action}</span>
+                    <span className="font-mono text-violet">&#9889;{item.cost}</span>
                   </div>
                 ))}
               </div>
@@ -164,23 +151,23 @@ export default function SettingsPage() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className={`rounded-xl p-6 border transition-all ${
+                  className={`glass-card p-6 transition-all ${
                     plan.current
-                      ? 'border-neon-cyan/50 bg-neon-cyan/5'
+                      ? 'gradient-border-glow glow-cyan'
                       : plan.id === 'pro'
-                      ? 'border-sakura-pink/40 bg-sakura-pink/5'
-                      : 'border-ink-mid/30 bg-ink-deep/50'
+                      ? 'gradient-border-glow glow-violet'
+                      : ''
                   }`}
                 >
-                  {plan.current && <div className="text-xs text-neon-cyan font-mono mb-2">✓ CURRENT PLAN</div>}
-                  {plan.id === 'pro' && !plan.current && <div className="text-xs text-sakura-pink font-mono mb-2">⭐ RECOMMENDED</div>}
-                  <h4 className="font-[family-name:var(--font-heading)] text-xl mb-1">{plan.name}</h4>
+                  {plan.current && <div className="text-xs text-cyan font-mono mb-2">&#10003; CURRENT PLAN</div>}
+                  {plan.id === 'pro' && !plan.current && <div className="text-xs text-violet font-mono mb-2">RECOMMENDED</div>}
+                  <h4 className="font-[family-name:var(--font-heading)] text-xl font-medium mb-1">{plan.name}</h4>
                   <div className="text-2xl font-black mb-1">{plan.price}</div>
-                  <div className="text-sm text-neon-cyan mb-4">⚡ {plan.credits} credits/mo</div>
+                  <div className="text-sm text-cyan/60 mb-4 font-mono">&#9889; {plan.credits} credits/mo</div>
                   <ul className="space-y-1.5 mb-6">
                     {plan.features.map(f => (
-                      <li key={f} className="text-xs text-ink-light flex items-start gap-2">
-                        <span className="text-sakura-pink">✓</span> {f}
+                      <li key={f} className="text-xs text-ink-light/50 flex items-start gap-2">
+                        <span className="text-violet">&#10003;</span> {f}
                       </li>
                     ))}
                   </ul>
@@ -188,9 +175,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => handleSubscribe(plan.id)}
                       className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                        plan.id === 'pro'
-                          ? 'bg-sakura-pink text-paper-pure hover:bg-sakura-soft'
-                          : 'bg-ink-wash text-paper-warm hover:bg-ink-mid border border-ink-mid'
+                        plan.id === 'pro' ? 'btn-primary' : 'btn-ghost'
                       }`}
                     >
                       Upgrade to {plan.name}
@@ -207,49 +192,49 @@ export default function SettingsPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-lg">
             <div className="glass-card p-6 space-y-6">
               <div>
-                <label className="text-sm text-ink-light mb-2 block">Display Name</label>
-                <input type="text" defaultValue="Creator_42" className="w-full px-4 py-2.5 rounded-xl bg-ink-deep border border-ink-mid text-paper-warm text-sm outline-none focus:border-neon-cyan/50 transition-colors" />
+                <label className="text-sm text-ink-light/40 mb-2 block">Display Name</label>
+                <input type="text" defaultValue="Creator_42" className="w-full input-glass px-4 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="text-sm text-ink-light mb-2 block">Email</label>
-                <input type="email" defaultValue="creator@example.com" className="w-full px-4 py-2.5 rounded-xl bg-ink-deep border border-ink-mid text-paper-warm text-sm outline-none focus:border-neon-cyan/50 transition-colors" />
+                <label className="text-sm text-ink-light/40 mb-2 block">Email</label>
+                <input type="email" defaultValue="creator@example.com" className="w-full input-glass px-4 py-2.5 text-sm" />
               </div>
               <div>
-                <label className="text-sm text-ink-light mb-2 block">Content Rating Preference</label>
-                <select className="w-full px-4 py-2.5 rounded-xl bg-ink-deep border border-ink-mid text-paper-warm text-sm outline-none">
-                  <option>G — General</option>
-                  <option>PG — Parental Guidance</option>
-                  <option selected>PG-13 — Some Mature</option>
-                  <option>R — Mature</option>
-                  <option>M — Adults Only</option>
+                <label className="text-sm text-ink-light/40 mb-2 block">Content Rating Preference</label>
+                <select defaultValue="PG-13" className="w-full input-glass px-4 py-2.5 text-sm">
+                  <option value="G">G &mdash; General</option>
+                  <option value="PG">PG &mdash; Parental Guidance</option>
+                  <option value="PG-13">PG-13 &mdash; Some Mature</option>
+                  <option value="R">R &mdash; Mature</option>
+                  <option value="M">M &mdash; Adults Only</option>
                 </select>
               </div>
               <div>
-                <label className="text-sm text-ink-light mb-2 block">Preferred Language</label>
-                <select className="w-full px-4 py-2.5 rounded-xl bg-ink-deep border border-ink-mid text-paper-warm text-sm outline-none">
+                <label className="text-sm text-ink-light/40 mb-2 block">Preferred Language</label>
+                <select className="w-full input-glass px-4 py-2.5 text-sm">
                   <option>English</option>
-                  <option>日本語 (Japanese)</option>
-                  <option>한국어 (Korean)</option>
-                  <option>Français (French)</option>
-                  <option>Español (Spanish)</option>
-                  <option>Português (Portuguese)</option>
-                  <option>中文 (Chinese)</option>
-                  <option>العربية (Arabic)</option>
+                  <option>Japanese</option>
+                  <option>Korean</option>
+                  <option>French</option>
+                  <option>Spanish</option>
+                  <option>Portuguese</option>
+                  <option>Chinese</option>
+                  <option>Arabic</option>
                 </select>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-ink-light">Push Notifications</span>
-                <button className="w-12 h-6 rounded-full bg-neon-cyan/30 relative">
-                  <div className="w-5 h-5 rounded-full bg-neon-cyan absolute right-0.5 top-0.5" />
+                <span className="text-sm text-ink-light/40">Push Notifications</span>
+                <button className="w-12 h-6 rounded-full bg-violet/30 relative">
+                  <div className="w-5 h-5 rounded-full bg-violet absolute right-0.5 top-0.5" />
                 </button>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-ink-light">Creation Streak Reminders</span>
-                <button className="w-12 h-6 rounded-full bg-neon-cyan/30 relative">
-                  <div className="w-5 h-5 rounded-full bg-neon-cyan absolute right-0.5 top-0.5" />
+                <span className="text-sm text-ink-light/40">Creation Streak Reminders</span>
+                <button className="w-12 h-6 rounded-full bg-violet/30 relative">
+                  <div className="w-5 h-5 rounded-full bg-violet absolute right-0.5 top-0.5" />
                 </button>
               </div>
-              <button className="w-full py-3 rounded-xl bg-sakura-pink text-paper-pure font-semibold text-sm hover:bg-sakura-soft transition-colors">
+              <button className="w-full py-3 rounded-xl btn-primary text-sm">
                 Save Changes
               </button>
             </div>
@@ -261,10 +246,10 @@ export default function SettingsPage() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="grid md:grid-cols-4 gap-4 mb-10">
               {[
-                { label: 'Total Chapters', value: '34', icon: '📖' },
-                { label: 'Total Pages', value: '748', icon: '📄' },
-                { label: 'Store Sales', value: '$127.50', icon: '💰' },
-                { label: 'Creation Streak', value: '🔥 x 7', icon: '🔥' },
+                { label: 'Total Chapters', value: '34' },
+                { label: 'Total Pages', value: '748' },
+                { label: 'Store Sales', value: '$127.50' },
+                { label: 'Creation Streak', value: '7 days' },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
@@ -273,15 +258,14 @@ export default function SettingsPage() {
                   transition={{ delay: i * 0.1 }}
                   className="glass-card p-5 text-center"
                 >
-                  <div className="text-3xl mb-2">{stat.icon}</div>
-                  <div className="font-[family-name:var(--font-display)] text-2xl font-black">{stat.value}</div>
-                  <div className="text-xs text-ink-light mt-1">{stat.label}</div>
+                  <div className="font-[family-name:var(--font-display)] text-2xl font-black gradient-text">{stat.value}</div>
+                  <div className="text-xs text-ink-light/40 mt-1">{stat.label}</div>
                 </motion.div>
               ))}
             </div>
 
             <div className="glass-card p-6">
-              <h3 className="font-[family-name:var(--font-heading)] text-lg mb-4">Credit Usage (Last 30 Days)</h3>
+              <h3 className="font-[family-name:var(--font-heading)] text-lg font-light mb-4">Credit Usage (Last 30 Days)</h3>
               <div className="h-48 flex items-end gap-1">
                 {Array.from({ length: 30 }, (_, i) => {
                   const h = Math.random() * 80 + 10;
@@ -291,7 +275,7 @@ export default function SettingsPage() {
                       className="flex-1 rounded-t transition-all hover:opacity-80 cursor-pointer"
                       style={{
                         height: `${h}%`,
-                        background: `linear-gradient(to top, #FF6B9D${h > 50 ? '' : '80'}, #00F5FF${h > 50 ? '' : '40'})`,
+                        background: `linear-gradient(to top, #7C3AED${h > 50 ? '' : '80'}, #06B6D4${h > 50 ? '' : '40'})`,
                       }}
                       title={`Day ${i + 1}: ${Math.floor(h / 10)} credits`}
                     />

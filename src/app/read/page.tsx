@@ -74,21 +74,21 @@ export default function ReaderPage() {
             initial={{ y: -60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -60, opacity: 0 }}
-            className="absolute top-0 left-0 right-0 z-40 h-14 bg-ink-void/90 backdrop-blur-xl border-b border-ink-mid/20 flex items-center px-4 gap-4"
+            className="absolute top-0 left-0 right-0 z-40 h-14 glass-nav flex items-center px-4 gap-4"
             onClick={e => e.stopPropagation()}
           >
-            <Link href="/library" className="text-ink-light hover:text-paper-warm transition-colors text-sm">
-              ← Library
+            <Link href="/library" className="text-ink-light/40 hover:text-paper-warm transition-colors text-sm">
+              &larr; Library
             </Link>
             <div className="flex-1 text-center">
-              <span className="font-[family-name:var(--font-heading)] text-sm">Blade of the Eternal Night</span>
-              <span className="text-xs text-ink-light ml-2">Ch. 1</span>
+              <span className="font-[family-name:var(--font-heading)] text-sm font-medium">Blade of the Eternal Night</span>
+              <span className="text-xs text-ink-light/30 ml-2">Ch. 1</span>
             </div>
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="text-ink-light hover:text-paper-warm transition-colors"
+              className="text-ink-light/40 hover:text-paper-warm transition-colors text-sm"
             >
-              ⚙️
+              Settings
             </button>
           </motion.div>
         )}
@@ -101,22 +101,22 @@ export default function ReaderPage() {
             initial={{ opacity: 0, x: 300 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 300 }}
-            className="fixed right-0 top-14 bottom-0 w-72 z-50 bg-ink-deep border-l border-ink-mid/20 p-6"
+            className="fixed right-0 top-14 bottom-0 w-72 z-50 glass-panel rounded-none border-l border-ink-mid/10 p-6"
             onClick={e => e.stopPropagation()}
           >
-            <h3 className="font-[family-name:var(--font-heading)] text-lg mb-6">Reader Settings</h3>
+            <h3 className="font-[family-name:var(--font-heading)] text-lg font-light mb-6">Reader Settings</h3>
             <div className="space-y-6">
               <div>
-                <label className="text-sm text-ink-light mb-3 block">Reading Direction</label>
+                <label className="text-sm text-ink-light/40 mb-3 block">Reading Direction</label>
                 <div className="flex gap-2">
-                  {([['rtl', '← RTL (Manga)'], ['ltr', 'LTR → (Comics)'], ['vertical', '↓ Scroll (Webtoon)']] as [ReadingMode, string][]).map(([mode, label]) => (
+                  {([['rtl', '\u2190 RTL (Manga)'], ['ltr', 'LTR \u2192 (Comics)'], ['vertical', '\u2193 Scroll (Webtoon)']] as [ReadingMode, string][]).map(([mode, label]) => (
                     <button
                       key={mode}
                       onClick={() => setReadingMode(mode)}
                       className={`flex-1 py-2 rounded-lg text-xs transition-all ${
                         readingMode === mode
-                          ? 'bg-sakura-pink/20 text-sakura-pink border border-sakura-pink/30'
-                          : 'bg-ink-wash text-ink-light border border-ink-mid/30 hover:border-ink-mid'
+                          ? 'bg-violet/15 text-violet border border-violet/20'
+                          : 'btn-ghost'
                       }`}
                     >
                       {label}
@@ -125,26 +125,26 @@ export default function ReaderPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm text-ink-light mb-2 block">Page Display</label>
+                <label className="text-sm text-ink-light/40 mb-2 block">Page Display</label>
                 <div className="flex gap-2">
-                  <button className="flex-1 py-2 rounded-lg text-xs bg-sakura-pink/20 text-sakura-pink border border-sakura-pink/30">Single</button>
-                  <button className="flex-1 py-2 rounded-lg text-xs bg-ink-wash text-ink-light border border-ink-mid/30">Double Spread</button>
+                  <button className="flex-1 py-2 rounded-lg text-xs bg-violet/15 text-violet border border-violet/20">Single</button>
+                  <button className="flex-1 py-2 rounded-lg text-xs btn-ghost">Double Spread</button>
                 </div>
               </div>
               <div>
-                <label className="text-sm text-ink-light mb-2 block">Background</label>
+                <label className="text-sm text-ink-light/40 mb-2 block">Background</label>
                 <div className="flex gap-2">
-                  <button className="w-8 h-8 rounded-lg bg-ink-void border-2 border-sakura-pink" />
-                  <button className="w-8 h-8 rounded-lg bg-[#1a1a2e] border border-ink-mid" />
-                  <button className="w-8 h-8 rounded-lg bg-[#2d2d3f] border border-ink-mid" />
+                  <button className="w-8 h-8 rounded-lg bg-ink-void border-2 border-violet" />
+                  <button className="w-8 h-8 rounded-lg bg-[#0D0D12] border border-ink-mid/20" />
+                  <button className="w-8 h-8 rounded-lg bg-[#16161E] border border-ink-mid/20" />
                 </div>
               </div>
               <div>
-                <label className="text-sm text-ink-light mb-2 block">Keyboard Shortcuts</label>
-                <div className="space-y-1 text-xs text-ink-light/50">
-                  <p>← → Navigate pages</p>
-                  <p>F — Fullscreen</p>
-                  <p>ESC — Toggle UI</p>
+                <label className="text-sm text-ink-light/40 mb-2 block">Keyboard Shortcuts</label>
+                <div className="space-y-1 text-xs text-ink-light/20">
+                  <p>&larr; &rarr; Navigate pages</p>
+                  <p>F &mdash; Fullscreen</p>
+                  <p>ESC &mdash; Toggle UI</p>
                 </div>
               </div>
             </div>
@@ -154,7 +154,6 @@ export default function ReaderPage() {
 
       {/* Main Reading Area */}
       {readingMode === 'vertical' ? (
-        /* Vertical Scroll (Webtoon mode) */
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl mx-auto py-16">
             {DEMO_PAGES.map((page, i) => (
@@ -170,14 +169,11 @@ export default function ReaderPage() {
           </div>
         </div>
       ) : (
-        /* Single page (RTL or LTR) */
         <div className="flex-1 flex items-center justify-center relative">
-          {/* Left click zone */}
           <div
             className="absolute left-0 top-0 bottom-0 w-1/3 z-10 cursor-pointer"
             onClick={(e) => { e.stopPropagation(); goPrev(); }}
           />
-          {/* Right click zone */}
           <div
             className="absolute right-0 top-0 bottom-0 w-1/3 z-10 cursor-pointer"
             onClick={(e) => { e.stopPropagation(); goNext(); }}
@@ -209,10 +205,9 @@ export default function ReaderPage() {
             initial={{ y: 60, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 60, opacity: 0 }}
-            className="absolute bottom-0 left-0 right-0 z-40 bg-ink-void/90 backdrop-blur-xl border-t border-ink-mid/20 p-4"
+            className="absolute bottom-0 left-0 right-0 z-40 glass-nav p-4 border-t border-ink-mid/10"
             onClick={e => e.stopPropagation()}
           >
-            {/* Progress bar */}
             <div className="h-1 rounded-full bg-ink-deep mb-3 overflow-hidden cursor-pointer"
               onClick={e => {
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -222,19 +217,19 @@ export default function ReaderPage() {
               }}
             >
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-sakura-pink to-neon-cyan"
+                className="h-full rounded-full bg-gradient-to-r from-violet via-pink to-cyan"
                 animate={{ width: `${progressPercent}%` }}
               />
             </div>
             <div className="flex items-center justify-between">
-              <button onClick={goPrev} className="px-4 py-2 rounded-lg bg-ink-wash text-sm hover:bg-ink-mid transition-colors">
-                {readingMode === 'rtl' ? '→ Prev' : '← Prev'}
+              <button onClick={goPrev} className="px-4 py-2 rounded-lg btn-ghost text-sm">
+                {readingMode === 'rtl' ? '\u2192 Prev' : '\u2190 Prev'}
               </button>
-              <span className="text-sm font-mono text-ink-light">
+              <span className="text-sm font-mono text-ink-light/40">
                 {currentPage + 1} / {totalPages}
               </span>
-              <button onClick={goNext} className="px-4 py-2 rounded-lg bg-ink-wash text-sm hover:bg-ink-mid transition-colors">
-                {readingMode === 'rtl' ? 'Next ←' : 'Next →'}
+              <button onClick={goNext} className="px-4 py-2 rounded-lg btn-ghost text-sm">
+                {readingMode === 'rtl' ? 'Next \u2190' : 'Next \u2192'}
               </button>
             </div>
           </motion.div>

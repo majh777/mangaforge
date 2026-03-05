@@ -36,15 +36,12 @@ export default function ChapterPage() {
       const numPages = c.pagesPerChapter || 20;
       setTotalPages(numPages);
 
-      // Initialize page slots
       const initialPages: PageData[] = Array.from({ length: numPages }, (_, i) => ({
         pageNumber: i + 1,
         imageUrl: null,
         status: i === 0 ? 'generating' : 'queued',
       }));
       setPages(initialPages);
-
-      // Simulate page-by-page generation
       generatePages(numPages, c);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,7 +58,6 @@ export default function ChapterPage() {
       ));
 
       try {
-        // Generate the page image via NB2
         const pagePrompt = buildPagePrompt(i, numPages, conf, synopsis, characters);
         const res = await fetch('/api/generate-portrait', {
           method: 'POST',
@@ -88,11 +84,9 @@ export default function ChapterPage() {
         ));
       }
 
-      // Small delay between pages for dramatic effect
       await new Promise(r => setTimeout(r, 500));
     }
 
-    // Chapter complete — trigger hook sequence
     setIsComplete(true);
     setTimeout(() => setShowHookPanel(true), 3000);
   };
@@ -108,28 +102,23 @@ export default function ChapterPage() {
     const isFirstPage = pageIndex === 0;
     const isLastPage = pageIndex === total - 1;
     const panelsPerPage = (conf.panelsPerPage as number) || 6;
-
     const charNames = characters.map((c: Record<string, unknown>) => c.name as string).join(', ');
 
     if (isFirstPage) {
       return `A manga title page for Chapter 1: "${chapterTitle}". ${style} manga art style, black and white with screentones. Dramatic title typography with the chapter name. Characters: ${charNames}. Story: ${(synopsis.logline as string) || ''}. Professional manga quality with decorative borders.`;
     }
-
     if (isLastPage) {
       return `The final page of a manga chapter in ${style} style, black and white with screentones. ${panelsPerPage - 1} panels building to a dramatic cliffhanger. The last panel should be a dramatic splash showing a shocking revelation or intense moment. Characters: ${charNames}. Professional manga quality with speed lines and impact effects. All text in English.`;
     }
-
     const pageType = pageIndex < 3 ? 'establishing' :
                      pageIndex < total * 0.4 ? 'rising action' :
                      pageIndex < total * 0.7 ? 'confrontation' :
                      'climax build-up';
-
     return `A full manga page in ${style} style, black and white ink with screentones. ${panelsPerPage} panels showing ${pageType} scenes. Characters: ${charNames}. Page ${pageIndex + 1} of ${total}. Dynamic panel layouts, varied shot angles (close-up, wide, medium), expressive character art, atmospheric backgrounds. All dialogue in English speech bubbles. Professional manga quality.`;
   };
 
   return (
-    <main className="min-h-screen relative">
-      {/* Nav */}
+    <main className="min-h-screen relative mesh-gradient">
       <div className="fixed top-6 left-6 z-50">
         <Link href="/create/characters" className="flex items-center gap-2 text-ink-light hover:text-paper-warm transition-colors group">
           <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -142,7 +131,7 @@ export default function ChapterPage() {
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 z-40 h-1 bg-ink-deep">
         <motion.div
-          className="h-full bg-gradient-to-r from-sakura-pink to-neon-cyan"
+          className="h-full bg-gradient-to-r from-violet via-pink to-cyan"
           animate={{ width: `${((currentPage + 1) / totalPages) * 100}%` }}
           transition={{ duration: 0.5 }}
         />
@@ -151,13 +140,9 @@ export default function ChapterPage() {
       {/* Status bar */}
       {!isComplete && (
         <div className="fixed top-6 right-6 z-50">
-          <div className="glass-card px-4 py-2 flex items-center gap-3">
-            <motion.div
-              className="w-2 h-2 rounded-full bg-neon-cyan"
-              animate={{ opacity: [1, 0.3, 1] }}
-              transition={{ repeat: Infinity, duration: 1 }}
-            />
-            <span className="text-sm font-mono text-ink-light">
+          <div className="glass px-4 py-2 rounded-full flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-violet animate-pulse" />
+            <span className="text-sm font-mono text-ink-light/60">
               Page {currentPage + 1} of {totalPages}
             </span>
           </div>
@@ -165,19 +150,17 @@ export default function ChapterPage() {
       )}
 
       <div ref={scrollRef} className="max-w-3xl mx-auto px-4 pt-20 pb-32">
-        {/* Chapter header */}
         <motion.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="text-sm font-mono text-neon-cyan mb-2">Chapter 1</div>
+          <div className="text-sm font-mono text-violet mb-2">Chapter 1</div>
           <h1 className="font-[family-name:var(--font-display)] text-3xl md:text-4xl">{chapterTitle}</h1>
         </motion.div>
 
-        {/* Pages */}
         <div className="space-y-8">
-          {pages.map((page, i) => (
+          {pages.map((page) => (
             <motion.div
               key={page.pageNumber}
               initial={{ opacity: 0, y: 30 }}
@@ -189,25 +172,16 @@ export default function ChapterPage() {
               className="relative"
             >
               {page.status === 'generating' ? (
-                /* Generation animation */
-                <div className="aspect-[3/4] bg-ink-deep rounded-lg border border-ink-mid flex items-center justify-center overflow-hidden">
+                <div className="aspect-[3/4] glass-card flex items-center justify-center overflow-hidden">
                   <div className="text-center">
-                    <motion.div
-                      className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-sakura-pink/30 relative"
-                      animate={{ rotate: 360 }}
-                      transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
-                    >
-                      <motion.div
-                        className="absolute inset-3 rounded-full border-2 border-neon-cyan/40"
-                        animate={{ rotate: -360 }}
-                        transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-                      />
-                    </motion.div>
-                    <p className="text-ink-light text-sm font-mono">Forging page {page.pageNumber}…</p>
+                    <div className="relative w-20 h-20 mx-auto mb-4">
+                      <div className="absolute inset-0 rounded-full border border-violet/20 animate-spin-slow" />
+                      <div className="absolute inset-3 rounded-full border border-pink/20 animate-spin-reverse" />
+                    </div>
+                    <p className="text-ink-light/40 text-sm font-mono">Forging page {page.pageNumber}&hellip;</p>
                   </div>
                 </div>
               ) : page.status === 'complete' && page.imageUrl ? (
-                /* Completed page */
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -218,25 +192,22 @@ export default function ChapterPage() {
                     alt={`Page ${page.pageNumber}`}
                     className="w-full rounded-lg shadow-2xl shadow-ink-void/50"
                   />
-                  <div className="text-center mt-2 text-xs text-ink-light/30 font-mono">
+                  <div className="text-center mt-2 text-xs text-ink-light/20 font-mono">
                     Page {page.pageNumber}
                   </div>
                 </motion.div>
               ) : page.status === 'error' ? (
-                /* Error state */
-                <div className="aspect-[3/4] bg-ink-deep rounded-lg border border-manga-red/30 flex items-center justify-center">
+                <div className="aspect-[3/4] glass-card flex items-center justify-center border-manga-red/20">
                   <div className="text-center">
-                    <div className="text-4xl mb-3">⚠️</div>
-                    <p className="text-manga-red text-sm">Generation failed</p>
-                    <button className="mt-3 px-4 py-1.5 rounded-lg text-xs bg-ink-wash hover:bg-ink-mid transition-colors">
+                    <p className="text-manga-red text-sm mb-3">Generation failed</p>
+                    <button className="px-4 py-1.5 rounded-lg text-xs btn-ghost">
                       Retry
                     </button>
                   </div>
                 </div>
               ) : (
-                /* Queued placeholder */
-                <div className="aspect-[3/4] bg-ink-deep/50 rounded-lg border border-ink-mid/30 flex items-center justify-center">
-                  <span className="text-ink-light/20 text-sm font-mono">Page {page.pageNumber}</span>
+                <div className="aspect-[3/4] bg-ink-deep/30 rounded-lg border border-ink-mid/10 flex items-center justify-center">
+                  <span className="text-ink-light/10 text-sm font-mono">Page {page.pageNumber}</span>
                 </div>
               )}
             </motion.div>
@@ -244,13 +215,13 @@ export default function ChapterPage() {
         </div>
       </div>
 
-      {/* ===== END-OF-CHAPTER HOOK PANEL ===== */}
+      {/* End-of-chapter hook panel */}
       <AnimatePresence>
         {showHookPanel && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed inset-0 z-[100] bg-ink-void/95 flex items-center justify-center px-4"
+            className="fixed inset-0 z-[100] bg-ink-void/95 backdrop-blur-xl flex items-center justify-center px-4"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
@@ -258,46 +229,41 @@ export default function ChapterPage() {
               transition={{ delay: 0.3, type: 'spring' }}
               className="max-w-lg w-full text-center"
             >
-              {/* Chapter complete badge */}
               <motion.div
                 initial={{ scale: 0, rotate: -10 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.5, type: 'spring' }}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-sakura-pink/20 to-neon-cyan/20 border border-sakura-pink/30 mb-8"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full glass border border-violet/20 mb-8"
               >
-                <span className="text-2xl">📖</span>
-                <span className="font-[family-name:var(--font-heading)] text-xl text-paper-warm">Chapter 1 Complete</span>
+                <span className="font-[family-name:var(--font-heading)] text-xl text-paper-warm/80">Chapter 1 Complete</span>
               </motion.div>
 
-              {/* Tease line */}
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="text-lg text-ink-light italic mb-10 leading-relaxed"
+                className="text-lg text-ink-light/50 italic mb-10 leading-relaxed"
               >
                 &ldquo;{HOOK_TEASE_LINES[Math.floor(Math.random() * HOOK_TEASE_LINES.length)]}&rdquo;
               </motion.p>
 
-              {/* Next chapter button */}
               <motion.button
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.5 }}
-                className="px-12 py-5 rounded-2xl bg-sakura-pink text-paper-pure font-[family-name:var(--font-heading)] font-bold text-xl sakura-glow-pulse hover:bg-sakura-soft transition-all hover:scale-105"
+                className="px-12 py-5 rounded-2xl btn-primary font-[family-name:var(--font-heading)] font-bold text-xl glow-pulse-cta hover:scale-105 transition-transform"
               >
-                ⚒️ Forge Chapter 2
+                Forge Chapter 2
               </motion.button>
               <motion.p
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 0.5 }}
+                animate={{ opacity: 0.3 }}
                 transition={{ delay: 1.8 }}
-                className="mt-3 text-sm text-ink-light/50"
+                className="mt-3 text-sm text-ink-light/30"
               >
-                ⚡ 8 credits
+                &#9889; 8 credits
               </motion.p>
 
-              {/* Secondary actions */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -306,15 +272,15 @@ export default function ChapterPage() {
               >
                 <button
                   onClick={() => setShowHookPanel(false)}
-                  className="px-4 py-2 rounded-lg text-sm text-ink-light bg-ink-wash hover:bg-ink-mid transition-colors"
+                  className="px-4 py-2 rounded-lg text-sm btn-ghost"
                 >
-                  📖 Re-read Chapter 1
+                  Re-read Chapter 1
                 </button>
-                <button className="px-4 py-2 rounded-lg text-sm text-ink-light bg-ink-wash hover:bg-ink-mid transition-colors">
-                  💬 Chat with Character
+                <button className="px-4 py-2 rounded-lg text-sm btn-ghost">
+                  Chat with Character
                 </button>
-                <button className="px-4 py-2 rounded-lg text-sm text-ink-light bg-ink-wash hover:bg-ink-mid transition-colors">
-                  📤 Share
+                <button className="px-4 py-2 rounded-lg text-sm btn-ghost">
+                  Share
                 </button>
               </motion.div>
             </motion.div>
