@@ -21,10 +21,10 @@ interface Character {
 }
 
 const ROLE_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  protagonist: { bg: 'bg-gold-premium/20', text: 'text-gold-premium', label: 'Protagonist' },
-  antagonist: { bg: 'bg-manga-red/20', text: 'text-manga-red', label: 'Antagonist' },
-  supporting: { bg: 'bg-neon-cyan/20', text: 'text-neon-cyan', label: 'Supporting' },
-  minor: { bg: 'bg-ink-light/20', text: 'text-ink-light', label: 'Minor' },
+  protagonist: { bg: 'bg-gold-premium/10', text: 'text-gold-premium', label: 'Protagonist' },
+  antagonist: { bg: 'bg-manga-red/10', text: 'text-manga-red', label: 'Antagonist' },
+  supporting: { bg: 'bg-cyan/10', text: 'text-cyan', label: 'Supporting' },
+  minor: { bg: 'bg-ink-light/10', text: 'text-ink-light', label: 'Minor' },
 };
 
 function CharacterCard({
@@ -44,23 +44,14 @@ function CharacterCard({
       initial={{ opacity: 0, rotateY: 90 }}
       animate={{ opacity: 1, rotateY: 0 }}
       transition={{ delay: index * 0.3, duration: 0.6, type: 'spring' }}
-      className="glass-card overflow-hidden group cursor-pointer"
+      className="glass-card overflow-hidden group cursor-pointer hover:border-violet/20 transition-all"
       onClick={() => setExpanded(!expanded)}
     >
-      {/* Portrait */}
       <div className="relative h-64 bg-gradient-to-br from-ink-wash to-ink-deep overflow-hidden">
         {character.isGeneratingPortrait ? (
           <div className="absolute inset-0 flex items-center justify-center">
-            <motion.div
-              className="w-16 h-16 rounded-full border-2 border-sakura-pink/40"
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-            />
-            <motion.div
-              className="absolute w-10 h-10 rounded-full border-2 border-neon-cyan/40"
-              animate={{ rotate: -360 }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
-            />
+            <div className="w-16 h-16 rounded-full border border-violet/30 animate-spin-slow" />
+            <div className="absolute w-10 h-10 rounded-full border border-pink/30 animate-spin-reverse" />
           </div>
         ) : character.portraitUrl ? (
           <img
@@ -69,35 +60,28 @@ function CharacterCard({
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-6xl opacity-30">
-            {character.role === 'protagonist' ? '⭐' :
-             character.role === 'antagonist' ? '🔥' :
-             character.role === 'supporting' ? '🛡️' : '👤'}
+          <div className="absolute inset-0 flex items-center justify-center shimmer">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet/20 to-pink/20" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-ink-deep via-transparent to-transparent" />
-
-        {/* Role badge */}
-        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-mono ${role.bg} ${role.text} backdrop-blur-sm`}>
+        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-mono ${role.bg} ${role.text} backdrop-blur-sm border border-current/10`}>
           {role.label}
         </div>
       </div>
 
-      {/* Info */}
       <div className="p-5">
-        <h3 className="font-[family-name:var(--font-heading)] text-xl font-semibold mb-1">{character.name}</h3>
-        <p className="text-ink-light text-sm mb-3">{character.bioShort}</p>
+        <h3 className="font-[family-name:var(--font-heading)] text-xl font-medium mb-1">{character.name}</h3>
+        <p className="text-ink-light/50 text-sm mb-3">{character.bioShort}</p>
 
-        {/* Personality traits */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {character.personalityTraits.slice(0, 4).map((trait) => (
-            <span key={trait} className="px-2 py-0.5 text-xs rounded-full bg-ink-wash text-ink-light border border-ink-mid">
+            <span key={trait} className="px-2 py-0.5 text-xs rounded-full bg-ink-wash/50 text-ink-light/50 border border-ink-mid/10">
               {trait}
             </span>
           ))}
         </div>
 
-        {/* Expanded bio */}
         <AnimatePresence>
           {expanded && (
             <motion.div
@@ -106,13 +90,13 @@ function CharacterCard({
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="pt-3 border-t border-ink-mid">
-                <p className="text-sm text-ink-light leading-relaxed whitespace-pre-line mb-3">
+              <div className="pt-3 border-t border-ink-mid/10">
+                <p className="text-sm text-ink-light/50 leading-relaxed whitespace-pre-line mb-3">
                   {character.bioFull}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-ink-light/50">
+                <div className="flex items-center gap-2 text-xs text-ink-light/30">
                   <span>Age: {character.age}</span>
-                  <span>·</span>
+                  <span>&middot;</span>
                   <span className="italic">&ldquo;{character.speechPattern}&rdquo;</span>
                 </div>
               </div>
@@ -120,16 +104,15 @@ function CharacterCard({
           )}
         </AnimatePresence>
 
-        {/* Actions */}
         <div className="flex gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
           <button
             onClick={onRegenPortrait}
-            className="flex-1 py-2 rounded-lg text-xs font-mono bg-ink-wash hover:bg-ink-mid border border-ink-mid transition-all"
+            className="flex-1 py-2 rounded-lg text-xs font-mono btn-ghost"
           >
-            🎨 New Portrait
+            New Portrait
           </button>
-          <button className="flex-1 py-2 rounded-lg text-xs font-mono bg-ink-wash hover:bg-ink-mid border border-ink-mid transition-all">
-            ✏️ Edit
+          <button className="flex-1 py-2 rounded-lg text-xs font-mono btn-ghost">
+            Edit
           </button>
         </div>
       </div>
@@ -174,13 +157,11 @@ export default function CharactersPage() {
         setCharacters(chars);
         setIsGenerating(false);
 
-        // Reveal characters one by one
         for (let i = 0; i < chars.length; i++) {
           await new Promise(r => setTimeout(r, 300));
           setRevealIndex(i);
         }
 
-        // Generate portraits in parallel
         const portraitPromises = chars.map(async (char, idx) => {
           try {
             const pRes = await fetch('/api/generate-portrait', {
@@ -206,14 +187,13 @@ export default function CharactersPage() {
         await Promise.all(portraitPromises);
       } catch (err) {
         console.error('Character generation error:', err);
-        // Fallback demo characters
         const demo: Character[] = [
           {
             name: 'Akari Kurogane',
             role: 'protagonist',
             age: 15,
             bioShort: 'A determined young blacksmith who discovers her forge can reshape reality itself.',
-            bioFull: 'Born in the mountain city of Kurogane, Akari inherited her grandfather\'s ancient forge after his mysterious disappearance. She\'s stubborn, fiercely independent, and has an innate talent for working with metal that goes beyond normal craftsmanship.\n\nWhat she doesn\'t know is that her bloodline carries the Primordial Flame — a power that hasn\'t manifested in a thousand years.',
+            bioFull: 'Born in the mountain city of Kurogane, Akari inherited her grandfather\'s ancient forge after his mysterious disappearance. She\'s stubborn, fiercely independent, and has an innate talent for working with metal that goes beyond normal craftsmanship.\n\nWhat she doesn\'t know is that her bloodline carries the Primordial Flame \u2014 a power that hasn\'t manifested in a thousand years.',
             physicalDescription: 'Short messy black hair with silver streaks, amber eyes, lean athletic build, burn scars on hands',
             visualPrompt: 'Young female blacksmith, 15 years old, short messy black hair with silver streaks, fierce amber eyes, lean athletic build, burn scars on hands, wearing a leather apron over simple clothes, confident stance',
             speechPattern: 'Direct and blunt, uses forge metaphors, rarely asks for help',
@@ -225,7 +205,7 @@ export default function CharactersPage() {
             name: 'Rei Shimizu',
             role: 'supporting',
             age: 17,
-            bioShort: 'A cool-headed Shadow Weaver apprentice assigned to watch Akari — torn between duty and growing friendship.',
+            bioShort: 'A cool-headed Shadow Weaver apprentice assigned to watch Akari.',
             bioFull: 'Rei was raised by the Shadow Weavers since childhood, trained to guard the boundaries between worlds. She was sent to Kurogane to observe Akari and report back.\n\nBeneath her calm exterior, Rei harbors doubts about the Shadow Weavers\' true intentions.',
             physicalDescription: 'Long silver hair in a braid, ice-blue eyes, tall and graceful, wears dark traditional robes',
             visualPrompt: 'Tall graceful young woman, 17 years old, long silver hair in a braid, piercing ice-blue eyes, wearing dark traditional Japanese robes with subtle silver embroidery, mysterious calm expression',
@@ -238,8 +218,8 @@ export default function CharactersPage() {
             name: 'The Hollow King',
             role: 'antagonist',
             age: 0,
-            bioShort: 'An ancient entity from beyond the dimensional boundary, seeking the Primordial Flame to merge all realities.',
-            bioFull: 'Once a craftsman like Akari, the Hollow King transcended his mortal form centuries ago by consuming dimensional energy. Now he exists between worlds — a shadow of immense power.\n\nHe doesn\'t see himself as evil. He believes merging all realities into one unified existence would end all suffering.',
+            bioShort: 'An ancient entity seeking the Primordial Flame to merge all realities.',
+            bioFull: 'Once a craftsman like Akari, the Hollow King transcended his mortal form centuries ago by consuming dimensional energy. Now he exists between worlds \u2014 a shadow of immense power.\n\nHe doesn\'t see himself as evil. He believes merging all realities into one unified existence would end all suffering.',
             physicalDescription: 'Towering figure in cracked obsidian armor, face obscured by a mask of swirling void, hands that phase between solid and shadow',
             visualPrompt: 'Towering dark figure in cracked obsidian armor, face hidden behind a mask of swirling void energy, ethereal shadow hands, intimidating presence, dark fantasy villain design',
             speechPattern: 'Philosophical, patient, speaks in metaphors about unity and wholeness',
@@ -287,16 +267,15 @@ export default function CharactersPage() {
   };
 
   const handleBeginChapter = () => {
+    console.log('Begin Chapter clicked, chars:', characters.length);
     sessionStorage.setItem('mangaforge_characters', JSON.stringify(characters));
     router.push('/create/chapter');
   };
 
-  const hasProtagonist = characters.some(c => c.role === 'protagonist');
-  const hasEnoughChars = characters.length >= 2;
+  const canBegin = characters.length >= 1;
 
   return (
-    <main className="min-h-screen relative">
-      {/* Nav */}
+    <main className="min-h-screen relative mesh-gradient">
       <div className="fixed top-6 left-6 z-50">
         <Link href="/create/synopsis" className="flex items-center gap-2 text-ink-light hover:text-paper-warm transition-colors group">
           <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -307,39 +286,37 @@ export default function CharactersPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 pt-24 pb-32">
-        {/* Header */}
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <h1 className="font-[family-name:var(--font-heading)] text-4xl md:text-5xl mb-3">
-            The <span className="text-gold-premium">Cast</span>
+          <p className="text-sm font-mono text-gold-premium mb-3 tracking-wider uppercase">Characters</p>
+          <h1 className="font-[family-name:var(--font-heading)] text-4xl md:text-5xl font-light mb-3">
+            The <span className="gradient-text font-semibold">Cast</span>
           </h1>
-          <p className="text-ink-light text-lg">Your characters, forged from narrative fire</p>
+          <p className="text-ink-light/50 text-lg font-light">Your characters, forged from narrative fire</p>
         </motion.div>
 
         {isGenerating ? (
-          /* Loading state */
           <motion.div
             className="flex flex-col items-center justify-center min-h-[40vh]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <motion.div
-              className="text-6xl mb-8"
-              animate={{ rotateY: [0, 180, 360] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-            >
-              🃏
-            </motion.div>
-            <p className="font-[family-name:var(--font-heading)] text-xl text-paper-warm">
-              Drawing the cards of fate…
+            <div className="relative w-24 h-24 mb-8">
+              <div className="absolute inset-0 rounded-full border border-violet/20 animate-spin-slow" />
+              <div className="absolute inset-3 rounded-full border border-pink/20 animate-spin-reverse" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet/20 to-pink/20 animate-pulse" />
+              </div>
+            </div>
+            <p className="font-[family-name:var(--font-heading)] text-xl text-paper-warm/60 font-light">
+              Drawing the cards of fate&hellip;
             </p>
           </motion.div>
         ) : (
           <>
-            {/* Character Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
               {characters.map((char, i) => (
                 i <= revealIndex && (
@@ -353,27 +330,24 @@ export default function CharactersPage() {
               ))}
             </div>
 
-            {/* Begin Chapter button */}
             <motion.div
               className="text-center"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: characters.length * 0.3 + 0.5 }}
             >
-              <motion.button
+              <button
                 onClick={handleBeginChapter}
-                disabled={!hasProtagonist || !hasEnoughChars}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                disabled={!canBegin}
                 className={`px-16 py-6 rounded-2xl font-[family-name:var(--font-heading)] font-bold text-2xl transition-all duration-500 ${
-                  hasProtagonist && hasEnoughChars
-                    ? 'bg-sakura-pink text-paper-pure sakura-glow-pulse hover:bg-sakura-soft'
-                    : 'bg-ink-wash text-ink-light cursor-not-allowed'
+                  canBegin
+                    ? 'btn-primary glow-pulse-cta hover:scale-105 active:scale-95'
+                    : 'bg-ink-wash/50 text-ink-light/30 cursor-not-allowed'
                 }`}
               >
                 📖 Begin Chapter 1
-              </motion.button>
-              <p className="mt-4 text-sm text-ink-light/50">⚡ ~8 credits per chapter</p>
+              </button>
+              <p className="mt-4 text-sm text-ink-light/30">&#9889; ~8 credits per chapter</p>
             </motion.div>
           </>
         )}
