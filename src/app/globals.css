@@ -548,3 +548,177 @@ body {
   border-color: rgba(136, 136, 170, 0.2);
   background: rgba(22, 22, 30, 0.8);
 }
+
+/* ========== GLOWING TITLE LETTERS ========== */
+.glow-letter {
+  display: inline-block;
+  transition: text-shadow 0.3s ease, transform 0.3s ease, color 0.3s ease;
+  cursor: default;
+}
+.glow-letter:hover {
+  text-shadow:
+    0 0 10px rgba(14, 165, 233, 0.8),
+    0 0 30px rgba(14, 165, 233, 0.5),
+    0 0 60px rgba(6, 182, 212, 0.3);
+  transform: scale(1.1);
+}
+.glow-letter.adjacent-1 {
+  text-shadow:
+    0 0 8px rgba(14, 165, 233, 0.5),
+    0 0 20px rgba(14, 165, 233, 0.3);
+}
+.glow-letter.adjacent-2 {
+  text-shadow:
+    0 0 5px rgba(14, 165, 233, 0.25),
+    0 0 12px rgba(14, 165, 233, 0.15);
+}
+
+/* ========== ANIMATED GRADIENT BORDER (Feature Cards) ========== */
+.gradient-border-animated {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.gradient-border-animated::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: 16px;
+  background: conic-gradient(from var(--border-angle, 0deg), rgba(14, 165, 233, 0.4), rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.4), rgba(6, 182, 212, 0.1), rgba(14, 165, 233, 0.4));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: rotateBorder 4s linear infinite;
+}
+@property --border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes rotateBorder {
+  to { --border-angle: 360deg; }
+}
+
+/* ========== SHIMMER BUTTON HOVER ========== */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: none;
+}
+.btn-shimmer:hover::after {
+  animation: shimmerSlide 0.8s ease forwards;
+}
+@keyframes shimmerSlide {
+  to { left: 150%; }
+}
+
+/* ========== CTA SPARKLE PARTICLES ========== */
+.cta-sparkles {
+  position: relative;
+}
+.cta-sparkles::before,
+.cta-sparkles::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(14, 165, 233, 0.6);
+  animation: sparkleFloat 3s ease-in-out infinite;
+}
+.cta-sparkles::before {
+  top: -20px;
+  left: 20%;
+  animation-delay: 0s;
+}
+.cta-sparkles::after {
+  top: -15px;
+  right: 25%;
+  animation-delay: 1.5s;
+  background: rgba(6, 182, 212, 0.6);
+}
+@keyframes sparkleFloat {
+  0%, 100% { opacity: 0; transform: translateY(0) scale(0); }
+  25% { opacity: 1; transform: translateY(-10px) scale(1); }
+  75% { opacity: 0.5; transform: translateY(-25px) scale(0.5); }
+}
+
+/* ========== MANGA CARD 3D TILT ========== */
+.manga-card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
+}
+.manga-card-3d:hover {
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(14, 165, 233, 0.15);
+}
+
+/* ========== SPEED LINES ========== */
+.speed-lines {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.speed-lines::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 8px,
+    rgba(255, 255, 255, 0.03) 8px,
+    rgba(255, 255, 255, 0.03) 9px
+  );
+}
+
+/* ========== FLOATING MANGA ELEMENTS ========== */
+.floating-element {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.12;
+  animation: floatRotate 12s ease-in-out infinite;
+}
+@keyframes floatRotate {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-15px) rotate(3deg); }
+  50% { transform: translateY(-8px) rotate(-2deg); }
+  75% { transform: translateY(-20px) rotate(1deg); }
+}
+
+/* ========== MANGA SOUND EFFECTS ========== */
+@keyframes soundEffectPulse {
+  0%, 100% { opacity: 0; transform: scale(0.8) rotate(-5deg); }
+  15%, 85% { opacity: 0.15; transform: scale(1) rotate(0deg); }
+  50% { opacity: 0.25; transform: scale(1.05) rotate(3deg); }
+}
+
+/* ========== RADIAL BURST ========== */
+.radial-burst {
+  position: absolute;
+  inset: -100px;
+  background: radial-gradient(ellipse at center, rgba(14, 165, 233, 0.12) 0%, rgba(59, 130, 246, 0.05) 40%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ========== COUNTER ANIMATION ========== */
+@keyframes countPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}

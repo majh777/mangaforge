@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { COMIC_STYLES } from '@/lib/styles';
 
 const TypewriterText = dynamic(
@@ -20,10 +20,10 @@ const FEATURES = [
 ];
 
 const STATS = [
-  { value: '47,832', label: 'Stories Forged' },
-  { value: '12', label: 'Comic Styles' },
-  { value: '$0.02', label: 'Per Page' },
-  { value: '16+', label: 'Languages' },
+  { value: '47,832', numericValue: 47832, label: 'Stories Forged', prefix: '', suffix: '' },
+  { value: '12', numericValue: 12, label: 'Comic Styles', prefix: '', suffix: '' },
+  { value: '$0.02', numericValue: 0.02, label: 'Per Page', prefix: '$', suffix: '' },
+  { value: '16+', numericValue: 16, label: 'Languages', prefix: '', suffix: '+' },
 ];
 
 const TESTIMONIALS = [
@@ -49,6 +49,25 @@ const HOW_IT_WORKS = [
   { step: '04', title: 'Share', desc: 'Publish to the marketplace or export for print.', icon: 'M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z' },
 ];
 
+const MANGA_SHOWCASE = [
+  { style: 'Shonen', gradient: 'from-red-600 to-orange-500', panelLayout: '2x3', badge: 'Action', speedLines: true },
+  { style: 'Shojo', gradient: 'from-pink-500 to-rose-300', panelLayout: '2x2', badge: 'Romance', speedLines: false },
+  { style: 'Seinen', gradient: 'from-slate-700 to-slate-900', panelLayout: '3x2', badge: 'Mature', speedLines: true },
+  { style: 'Manhwa', gradient: 'from-blue-500 to-cyan-400', panelLayout: '1x3', badge: 'Webtoon', speedLines: false },
+  { style: 'BD', gradient: 'from-emerald-600 to-teal-400', panelLayout: '3x3', badge: 'Franco-Belgian', speedLines: false },
+  { style: 'Noir', gradient: 'from-gray-800 to-black', panelLayout: '2x2', badge: 'Crime', speedLines: true },
+  { style: 'Horror', gradient: 'from-red-900 to-gray-900', panelLayout: '2x3', badge: 'Horror', speedLines: true },
+  { style: 'Watercolor', gradient: 'from-cyan-400 to-purple-400', panelLayout: '2x2', badge: 'Artistic', speedLines: false },
+];
+
+const SOUND_EFFECTS: Array<{ text: string; top: string; left?: string; right?: string; delay: string; duration: string }> = [
+  { text: 'POW!', top: '15%', left: '8%', delay: '0s', duration: '5s' },
+  { text: 'CRASH!', top: '60%', right: '5%', delay: '2s', duration: '6s' },
+  { text: 'WHOOSH!', top: '35%', left: '85%', delay: '1s', duration: '7s' },
+  { text: 'BAM!', top: '75%', left: '15%', delay: '3s', duration: '5.5s' },
+  { text: 'ZAP!', top: '20%', right: '20%', delay: '4s', duration: '6.5s' },
+];
+
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -70,6 +89,147 @@ function useScrollReveal() {
   return ref;
 }
 
+function useAnimatedCounter(target: number, isVisible: boolean, prefix: string, suffix: string, decimals = 0): string {
+  const [value, setValue] = useState(0);
+  const frameRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    const duration = 2000;
+    const start = performance.now();
+
+    function tick(now: number) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(eased * target);
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(tick);
+      }
+    }
+    frameRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [isVisible, target]);
+
+  const formatted = decimals > 0
+    ? value.toFixed(decimals)
+    : Math.round(value).toLocaleString();
+  return `${prefix}${formatted}${suffix}`;
+}
+
+function AnimatedStat({ stat }: { stat: typeof STATS[number] }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const decimals = stat.numericValue < 1 ? 2 : 0;
+  const display = useAnimatedCounter(stat.numericValue, visible, stat.prefix, stat.suffix, decimals);
+
+  return (
+    <div ref={ref} className="text-center reveal">
+      <div className="font-[family-name:var(--font-display)] text-3xl md:text-4xl font-black gradient-text">
+        {visible ? display : stat.value}
+      </div>
+      <div className="text-sm text-ink-light/60 mt-1">{stat.label}</div>
+    </div>
+  );
+}
+
+function GlowingTitle() {
+  const letters = 'InkForge'.split('');
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const getGlowClass = useCallback((i: number) => {
+    if (hoveredIndex === null) return '';
+    if (i === hoveredIndex) return '';
+    const dist = Math.abs(i - hoveredIndex);
+    if (dist === 1) return 'adjacent-1';
+    if (dist === 2) return 'adjacent-2';
+    return '';
+  }, [hoveredIndex]);
+
+  return (
+    <span className="inline-flex">
+      {letters.map((letter, i) => (
+        <span
+          key={i}
+          className={`glow-letter gradient-text ${getGlowClass(i)}`}
+          onMouseEnter={() => setHoveredIndex(i)}
+          onMouseLeave={() => setHoveredIndex(null)}
+        >
+          {letter}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+function MangaCard({ card, index }: { card: typeof MANGA_SHOWCASE[number]; index: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    el.style.transform = `perspective(800px) rotateY(${x * 12}deg) rotateX(${-y * 12}deg) translateZ(10px)`;
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.transform = 'perspective(800px) rotateY(0deg) rotateX(0deg) translateZ(0)';
+  }, []);
+
+  const panelGrid = card.panelLayout === '2x3' ? 'grid-cols-2 grid-rows-3'
+    : card.panelLayout === '3x2' ? 'grid-cols-3 grid-rows-2'
+    : card.panelLayout === '2x2' ? 'grid-cols-2 grid-rows-2'
+    : card.panelLayout === '1x3' ? 'grid-cols-1 grid-rows-3'
+    : 'grid-cols-3 grid-rows-3';
+
+  return (
+    <div
+      ref={ref}
+      className="manga-card-3d reveal cursor-pointer"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ animationDelay: `${index * 0.08}s` }}
+    >
+      <div className={`relative h-72 md:h-80 rounded-xl overflow-hidden bg-gradient-to-br ${card.gradient}`}>
+        {/* Panel grid overlay */}
+        <div className={`absolute inset-3 grid ${panelGrid} gap-[2px]`}>
+          {Array.from({ length: parseInt(card.panelLayout[0]) * parseInt(card.panelLayout[2]) }).map((_, j) => (
+            <div key={j} className="border border-white/20 rounded-sm bg-black/10 relative overflow-hidden">
+              {card.speedLines && j % 2 === 0 && <div className="speed-lines" />}
+            </div>
+          ))}
+        </div>
+
+        {/* Style badge */}
+        <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-black/50 backdrop-blur-sm text-[10px] font-mono text-white/80 border border-white/10">
+          {card.badge}
+        </div>
+
+        {/* Title overlay */}
+        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+          <p className="font-[family-name:var(--font-manga)] text-xl text-white tracking-wide">{card.style}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
   const scrollRef = useScrollReveal();
 
@@ -82,6 +242,45 @@ export default function HomePage() {
         <div className="absolute top-[50%] left-[50%] w-[400px] h-[400px] rounded-full bg-cyan/5 blur-[80px] animate-orb-1 animation-delay-500" />
       </div>
 
+      {/* Floating manga decorative elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        {/* Speed lines cluster */}
+        <div className="floating-element top-[20%] left-[5%] text-ink-light/10" style={{ animationDelay: '0s' }}>
+          <svg width="60" height="60" viewBox="0 0 60 60">
+            <line x1="0" y1="0" x2="60" y2="60" stroke="currentColor" strokeWidth="1.5" />
+            <line x1="10" y1="0" x2="60" y2="50" stroke="currentColor" strokeWidth="1" />
+            <line x1="20" y1="0" x2="60" y2="40" stroke="currentColor" strokeWidth="0.5" />
+          </svg>
+        </div>
+        {/* Exclamation bubble */}
+        <div className="floating-element top-[45%] right-[8%]" style={{ animationDelay: '3s', animationDuration: '10s' }}>
+          <svg width="50" height="50" viewBox="0 0 50 50" fill="none">
+            <ellipse cx="25" cy="20" rx="20" ry="15" stroke="rgba(14,165,233,0.12)" strokeWidth="1.5" fill="rgba(14,165,233,0.03)" />
+            <text x="25" y="24" textAnchor="middle" fill="rgba(14,165,233,0.15)" fontSize="14" fontWeight="bold">!</text>
+          </svg>
+        </div>
+        {/* Star burst */}
+        <div className="floating-element bottom-[30%] left-[10%]" style={{ animationDelay: '5s', animationDuration: '14s' }}>
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+            <polygon points="20,2 24,14 38,14 27,22 31,36 20,28 9,36 13,22 2,14 16,14" fill="rgba(6,182,212,0.08)" stroke="rgba(6,182,212,0.12)" strokeWidth="1" />
+          </svg>
+        </div>
+        {/* Speed lines - right side */}
+        <div className="floating-element top-[70%] right-[4%] text-ink-light/10" style={{ animationDelay: '7s', animationDuration: '11s' }}>
+          <svg width="50" height="50" viewBox="0 0 50 50">
+            <line x1="50" y1="0" x2="0" y2="50" stroke="currentColor" strokeWidth="1.5" />
+            <line x1="40" y1="0" x2="0" y2="40" stroke="currentColor" strokeWidth="1" />
+            <line x1="50" y1="10" x2="10" y2="50" stroke="currentColor" strokeWidth="0.5" />
+          </svg>
+        </div>
+        {/* Small star */}
+        <div className="floating-element top-[15%] right-[25%]" style={{ animationDelay: '2s', animationDuration: '9s' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 0 L14 10 L24 12 L14 14 L12 24 L10 14 L0 12 L10 10 Z" fill="rgba(14,165,233,0.08)" />
+          </svg>
+        </div>
+      </div>
+
       {/* ========== HERO ========== */}
       <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4">
         <div className="animate-slideUp relative z-10">
@@ -91,7 +290,7 @@ export default function HomePage() {
           </div>
 
           <h1 className="font-[family-name:var(--font-display)] text-6xl md:text-8xl lg:text-[10rem] font-black leading-[0.9] mb-6 tracking-tight">
-            <span className="gradient-text">InkForge</span>
+            <GlowingTitle />
           </h1>
 
           <p className="text-xl md:text-2xl text-paper-warm/70 mb-3 font-[family-name:var(--font-heading)] font-light animate-fadeIn animation-delay-500">
@@ -105,7 +304,7 @@ export default function HomePage() {
 
         <div className="animate-fadeIn animation-delay-1000 relative z-10">
           <Link href="/create">
-            <button className="group relative px-12 py-5 rounded-2xl btn-primary text-lg font-[family-name:var(--font-heading)] font-bold glow-pulse-cta">
+            <button className="group relative px-12 py-5 rounded-2xl btn-primary text-lg font-[family-name:var(--font-heading)] font-bold glow-pulse-cta btn-shimmer">
               <span className="relative z-10 flex items-center gap-3">
                 Start Creating
                 <span className="inline-block animate-bounceX">&rarr;</span>
@@ -126,12 +325,7 @@ export default function HomePage() {
       <section className="relative py-12 border-y border-ink-mid/10">
         <div className="max-w-5xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8">
           {STATS.map((s) => (
-            <div key={s.label} className="text-center reveal">
-              <div className="font-[family-name:var(--font-display)] text-3xl md:text-4xl font-black gradient-text">
-                {s.value}
-              </div>
-              <div className="text-sm text-ink-light/60 mt-1">{s.label}</div>
-            </div>
+            <AnimatedStat key={s.label} stat={s} />
           ))}
         </div>
       </section>
@@ -165,6 +359,41 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ========== MANGA SHOWCASE ========== */}
+      <section className="relative py-32 px-4 overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16 reveal">
+            <p className="text-sm font-mono text-cyan mb-3 tracking-wider uppercase">Gallery</p>
+            <h2 className="font-[family-name:var(--font-heading)] text-3xl md:text-5xl font-light">
+              Stunning <span className="gradient-text-pink-cyan font-semibold">Manga Pages</span>
+            </h2>
+            <p className="text-ink-light/50 mt-4">Every style. Every genre. Beautifully rendered.</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5" style={{ perspective: '1200px' }}>
+            {MANGA_SHOWCASE.map((card, i) => (
+              <MangaCard key={card.style} card={card} index={i} />
+            ))}
+          </div>
+        </div>
+
+        {/* Floating sound effects */}
+        {SOUND_EFFECTS.map((sfx) => (
+          <div
+            key={sfx.text}
+            className="absolute font-[family-name:var(--font-manga)] text-2xl md:text-3xl text-violet/0 select-none pointer-events-none hidden md:block"
+            style={{
+              top: sfx.top,
+              left: sfx.left,
+              right: sfx.right,
+              animation: `soundEffectPulse ${sfx.duration} ease-in-out infinite`,
+              animationDelay: sfx.delay,
+            } as React.CSSProperties}
+          >
+            {sfx.text}
+          </div>
+        ))}
+      </section>
+
       {/* ========== FEATURES BENTO GRID ========== */}
       <section className="relative py-32 px-4">
         <div className="max-w-6xl mx-auto">
@@ -177,7 +406,7 @@ export default function HomePage() {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((f, i) => (
-              <div key={f.title} className="reveal glass-card-hover p-8" style={{ animationDelay: `${i * 0.08}s` }}>
+              <div key={f.title} className="reveal gradient-border-animated glass-card-hover p-8" style={{ animationDelay: `${i * 0.08}s` }}>
                 <div className="w-10 h-10 mb-4 rounded-lg bg-gradient-to-br from-violet/15 to-cyan/15 flex items-center justify-center">
                   <svg className="w-5 h-5 text-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d={f.icon} />
@@ -303,8 +532,9 @@ export default function HomePage() {
       </section>
 
       {/* ========== FINAL CTA ========== */}
-      <section className="relative py-32 px-4 text-center">
-        <div className="reveal">
+      <section className="relative py-32 px-4 text-center overflow-hidden">
+        <div className="radial-burst" />
+        <div className="reveal relative z-10 cta-sparkles">
           <h2 className="font-[family-name:var(--font-display)] text-4xl md:text-6xl lg:text-7xl font-black mb-6">
             <span className="gradient-text">Your Story Awaits</span>
           </h2>
@@ -312,7 +542,7 @@ export default function HomePage() {
             Join thousands of creators turning imagination into manga.
           </p>
           <Link href="/create">
-            <button className="px-16 py-6 rounded-2xl btn-primary font-[family-name:var(--font-heading)] font-bold text-2xl glow-pulse-cta">
+            <button className="px-16 py-6 rounded-2xl btn-primary font-[family-name:var(--font-heading)] font-bold text-2xl glow-pulse-cta btn-shimmer">
               Start Forging
             </button>
           </Link>
