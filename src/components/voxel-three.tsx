@@ -93,7 +93,7 @@ export default function VoxelThree() {
         <VoxelGrid />
         <FloatingOrb position={[-6, 3, -5]} color="#FF6B9D" size={2} />
         <FloatingOrb position={[7, -1, -7]} color="#00F5FF" size={1.5} />
-        <FloatingOrb position={[0, 5, -10]} color="#8B5CF6" size={2.5} />
+        <FloatingOrb position={[0, 5, -10]} color="#0EA5E9" size={2.5} />
         <gridHelper args={[40, 40, '#1a1a3e', '#0a0a1f']} position={[0, -8, -5]} />
         <fog attach="fog" args={['#0A0A0F', 8, 25]} />
       </Canvas>

@@ -51,7 +51,7 @@ function CharacterCard({
         {character.isGeneratingPortrait ? (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full border border-violet/30 animate-spin-slow" />
-            <div className="absolute w-10 h-10 rounded-full border border-pink/30 animate-spin-reverse" />
+            <div className="absolute w-10 h-10 rounded-full border border-cyan/30 animate-spin-reverse" />
           </div>
         ) : character.portraitUrl ? (
           <img
@@ -61,7 +61,7 @@ function CharacterCard({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center shimmer">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet/20 to-pink/20" />
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-violet/20 to-cyan/20" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-ink-deep via-transparent to-transparent" />
@@ -306,9 +306,9 @@ export default function CharactersPage() {
           >
             <div className="relative w-24 h-24 mb-8">
               <div className="absolute inset-0 rounded-full border border-violet/20 animate-spin-slow" />
-              <div className="absolute inset-3 rounded-full border border-pink/20 animate-spin-reverse" />
+              <div className="absolute inset-3 rounded-full border border-cyan/20 animate-spin-reverse" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet/20 to-pink/20 animate-pulse" />
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet/20 to-cyan/20 animate-pulse" />
               </div>
             </div>
             <p className="font-[family-name:var(--font-heading)] text-xl text-paper-warm/60 font-light">

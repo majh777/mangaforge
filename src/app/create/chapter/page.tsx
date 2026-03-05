@@ -131,7 +131,7 @@ export default function ChapterPage() {
       {/* Progress bar */}
       <div className="fixed top-0 left-0 right-0 z-40 h-1 bg-ink-deep">
         <motion.div
-          className="h-full bg-gradient-to-r from-violet via-pink to-cyan"
+          className="h-full bg-gradient-to-r from-violet via-cyan to-cyan"
           animate={{ width: `${((currentPage + 1) / totalPages) * 100}%` }}
           transition={{ duration: 0.5 }}
         />
@@ -176,7 +176,7 @@ export default function ChapterPage() {
                   <div className="text-center">
                     <div className="relative w-20 h-20 mx-auto mb-4">
                       <div className="absolute inset-0 rounded-full border border-violet/20 animate-spin-slow" />
-                      <div className="absolute inset-3 rounded-full border border-pink/20 animate-spin-reverse" />
+                      <div className="absolute inset-3 rounded-full border border-cyan/20 animate-spin-reverse" />
                     </div>
                     <p className="text-ink-light/40 text-sm font-mono">Forging page {page.pageNumber}&hellip;</p>
                   </div>

@@ -116,7 +116,7 @@ export const COMIC_STYLES = [
     colorMode: 'Color',
     icon: '🎭',
     emoji: '🇫🇷',
-    accentColor: '#8B5CF6',
+    accentColor: '#0EA5E9',
     gradient: 'from-gold-premium/15 to-forest-green/10',
   },
   {

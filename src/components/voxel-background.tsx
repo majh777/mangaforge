@@ -12,7 +12,7 @@ function CSSBackground() {
         style={{ animationDelay: '1s' }}
       />
       <div
-        className="absolute w-[400px] h-[400px] -bottom-20 left-1/3 rounded-full bg-[#8B5CF6]/5 blur-[80px] animate-pulse"
+        className="absolute w-[400px] h-[400px] -bottom-20 left-1/3 rounded-full bg-[#0EA5E9]/5 blur-[80px] animate-pulse"
         style={{ animationDelay: '2s' }}
       />
       <div

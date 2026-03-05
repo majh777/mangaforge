@@ -78,7 +78,7 @@ export default function HomePage() {
       {/* Mesh gradient orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full bg-violet/10 blur-[120px] animate-orb-1" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-pink/8 blur-[100px] animate-orb-2" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-violet/6 blur-[100px] animate-orb-2" />
         <div className="absolute top-[50%] left-[50%] w-[400px] h-[400px] rounded-full bg-cyan/5 blur-[80px] animate-orb-1 animation-delay-500" />
       </div>
 
@@ -148,7 +148,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-6">
             {HOW_IT_WORKS.map((item, i) => (
               <div key={item.step} className="reveal glass-card-hover p-6 text-center relative" style={{ animationDelay: `${i * 0.1}s` }}>
-                <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-violet/20 to-pink/20 flex items-center justify-center">
+                <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-violet/20 to-cyan/20 flex items-center justify-center">
                   <svg className="w-6 h-6 text-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
                   </svg>
@@ -178,7 +178,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((f, i) => (
               <div key={f.title} className="reveal glass-card-hover p-8" style={{ animationDelay: `${i * 0.08}s` }}>
-                <div className="w-10 h-10 mb-4 rounded-lg bg-gradient-to-br from-violet/15 to-pink/15 flex items-center justify-center">
+                <div className="w-10 h-10 mb-4 rounded-lg bg-gradient-to-br from-violet/15 to-cyan/15 flex items-center justify-center">
                   <svg className="w-5 h-5 text-violet" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d={f.icon} />
                   </svg>
@@ -236,7 +236,7 @@ export default function HomePage() {
               <div key={`${t.name}-${i}`} className="glass-card p-6 w-80 shrink-0">
                 <p className="text-sm text-ink-light/70 italic mb-4 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet to-pink flex items-center justify-center text-xs text-white font-bold">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet to-cyan flex items-center justify-center text-xs text-white font-bold">
                     {t.name[0]}
                   </div>
                   <div>
@@ -272,7 +272,7 @@ export default function HomePage() {
                 style={{ animationDelay: `${i * 0.1}s` }}
               >
                 {p.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-violet to-pink text-xs text-white font-mono">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-violet to-cyan text-xs text-white font-mono">
                     MOST POPULAR
                   </div>
                 )}

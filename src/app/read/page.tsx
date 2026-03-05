@@ -217,7 +217,7 @@ export default function ReaderPage() {
               }}
             >
               <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-violet via-pink to-cyan"
+                className="h-full rounded-full bg-gradient-to-r from-violet via-cyan to-cyan"
                 animate={{ width: `${progressPercent}%` }}
               />
             </div>

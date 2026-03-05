@@ -172,7 +172,7 @@ export default function SynopsisPage() {
               {/* Orbiting particles */}
               <div className="relative w-48 h-48 mb-12">
                 <div className="absolute inset-0 rounded-full border border-violet/20 animate-spin-slow" />
-                <div className="absolute inset-4 rounded-full border border-pink/20 animate-spin-reverse" />
+                <div className="absolute inset-4 rounded-full border border-cyan/20 animate-spin-reverse" />
                 <div className="absolute inset-8 rounded-full border border-cyan/15 animate-spin-slow" style={{ animationDuration: '3s' }} />
                 {/* Orbiting dots */}
                 <div className="absolute inset-0 animate-spin-slow" style={{ animationDuration: '4s' }}>
@@ -185,7 +185,7 @@ export default function SynopsisPage() {
                   <div className="absolute top-1/2 right-0 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan" />
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet/20 to-pink/20 backdrop-blur-sm animate-pulse" />
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet/20 to-cyan/20 backdrop-blur-sm animate-pulse" />
                 </div>
               </div>
 
@@ -203,7 +203,7 @@ export default function SynopsisPage() {
 
               <div className="w-80 h-1 bg-ink-wash rounded-full overflow-hidden mb-8">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-violet via-pink to-cyan rounded-full"
+                  className="h-full bg-gradient-to-r from-violet via-cyan to-cyan rounded-full"
                   style={{ width: `${progress}%` }}
                   transition={{ duration: 0.1 }}
                 />

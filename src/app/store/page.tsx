@@ -28,7 +28,7 @@ const FEATURED: StoreListing[] = [
 
 const TRENDING: StoreListing[] = [
   { id: 't1', title: 'Zero Signal', creator: 'NeonScribe', style: 'Manhwa', styleIcon: '\uD83D\uDC8E', rating: 4.7, reviews: 890, price: 10, coverColor: '#3B82F6', genre: 'Sci-Fi', chapters: 22, contentRating: 'PG-13' },
-  { id: 't2', title: 'The Last Alchemist', creator: 'InkMaster99', style: 'Seinen', styleIcon: '\uD83D\uDDE1\uFE0F', rating: 4.6, reviews: 560, price: 12, coverColor: '#8B5CF6', genre: 'Fantasy', chapters: 18, contentRating: 'R' },
+  { id: 't2', title: 'The Last Alchemist', creator: 'InkMaster99', style: 'Seinen', styleIcon: '\uD83D\uDDE1\uFE0F', rating: 4.6, reviews: 560, price: 12, coverColor: '#0EA5E9', genre: 'Fantasy', chapters: 18, contentRating: 'R' },
   { id: 't3', title: 'Cafe Cosmos', creator: 'PixelDreams', style: 'Josei', styleIcon: '\u2728', rating: 4.8, reviews: 1200, price: 8, coverColor: '#F59E0B', genre: 'Slice of Life', chapters: 30, contentRating: 'PG' },
   { id: 't4', title: 'Dragon Pulse Academy', creator: 'ManhuaKing', style: 'Manhua', styleIcon: '\uD83D\uDC09', rating: 4.5, reviews: 430, price: 10, coverColor: '#EF4444', genre: 'Cultivation', chapters: 56, contentRating: 'PG-13' },
   { id: 't5', title: 'Neon Saints', creator: 'CyberInk', style: 'Cyberpunk', styleIcon: '\uD83C\uDFD9\uFE0F', rating: 4.4, reviews: 320, price: 15, coverColor: '#06B6D4', genre: 'Action', chapters: 14, contentRating: 'R' },
@@ -174,7 +174,7 @@ export default function StorePage() {
               onClick={() => setActiveGenre(g)}
               className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
                 activeGenre === g
-                  ? 'bg-gradient-to-r from-violet to-pink text-white'
+                  ? 'bg-gradient-to-r from-violet to-cyan text-white'
                   : 'glass text-ink-light/50 hover:text-paper-warm'
               }`}
             >
@@ -218,7 +218,7 @@ export default function StorePage() {
                 transition={{ delay: i * 0.1 }}
                 className="glass-card-hover p-5 text-center cursor-pointer"
               >
-                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-violet to-pink flex items-center justify-center text-white font-bold">
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gradient-to-br from-violet to-cyan flex items-center justify-center text-white font-bold">
                   {c.name[0]}
                 </div>
                 <h4 className="font-[family-name:var(--font-heading)] text-sm font-medium">{c.name}</h4>

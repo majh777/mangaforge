@@ -24,7 +24,7 @@ interface Message {
 }
 
 const DEMO_CHARACTERS: Character[] = [
-  { id: 'akari', name: 'Akari Kurogane', role: 'Protagonist', avatar: '\u2B50', color: '#7C3AED', status: 'Ready to talk', personality: 'Bold, fiery, determined' },
+  { id: 'akari', name: 'Akari Kurogane', role: 'Protagonist', avatar: '\u2B50', color: '#0EA5E9', status: 'Ready to talk', personality: 'Bold, fiery, determined' },
   { id: 'rei', name: 'Rei Shimizu', role: 'Supporting', avatar: '\u2744\uFE0F', color: '#06B6D4', status: 'Meditating...', personality: 'Calm, mysterious, conflicted' },
   { id: 'hollow', name: 'The Hollow King', role: 'Antagonist', avatar: '\uD83D\uDC51', color: '#EC4899', status: 'Watching...', personality: 'Philosophical, patient, terrifying' },
 ];

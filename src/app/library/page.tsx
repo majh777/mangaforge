@@ -24,7 +24,7 @@ interface Project {
 }
 
 const DEMO_PROJECTS: Project[] = [
-  { id: '1', title: 'Blade of the Eternal Night', style: 'Shonen Manga', styleIcon: '\u26A1', chapters: 4, totalChapters: 12, pages: 88, words: 12400, status: 'in_progress', coverColor: '#7C3AED', lastEdited: '2 hours ago', contentRating: 'PG-13' },
+  { id: '1', title: 'Blade of the Eternal Night', style: 'Shonen Manga', styleIcon: '\u26A1', chapters: 4, totalChapters: 12, pages: 88, words: 12400, status: 'in_progress', coverColor: '#0EA5E9', lastEdited: '2 hours ago', contentRating: 'PG-13' },
   { id: '2', title: 'Moonlit Garden', style: 'Shojo Manga', styleIcon: '\uD83C\uDF38', chapters: 7, totalChapters: 10, pages: 154, words: 28000, status: 'in_progress', coverColor: '#EC4899', lastEdited: '1 day ago', contentRating: 'PG' },
   { id: '3', title: 'Steel Requiem', style: 'Seinen Manga', styleIcon: '\uD83D\uDDE1\uFE0F', chapters: 12, totalChapters: 12, pages: 264, words: 45000, status: 'published', coverColor: '#64748B', lastEdited: '3 days ago', contentRating: 'R' },
   { id: '4', title: 'The Jade Emperor\'s Court', style: 'Manhua', styleIcon: '\uD83D\uDC09', chapters: 2, totalChapters: 24, pages: 40, words: 6200, status: 'draft', coverColor: '#F59E0B', lastEdited: '1 week ago', contentRating: 'PG-13' },

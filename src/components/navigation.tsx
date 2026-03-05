@@ -40,7 +40,7 @@ export function Navigation() {
             >
               {l.label}
               {isActive(l.href) && (
-                <span className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-violet to-pink opacity-60" />
+                <span className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-violet to-cyan opacity-60" />
               )}
             </Link>
           ))}
@@ -49,7 +49,7 @@ export function Navigation() {
             <span className="animate-pulse-soft">&#9889;</span>
             <span>247</span>
           </Link>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet to-pink flex items-center justify-center text-xs font-bold text-white">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet to-cyan flex items-center justify-center text-xs font-bold text-white">
             C
           </div>
         </div>

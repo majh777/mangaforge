@@ -10,6 +10,7 @@ import {
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { ParticleField } from "@/components/particle-field";
 
 const delaGothicOne = Dela_Gothic_One({
   weight: "400",
@@ -77,6 +78,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-screen antialiased">
+        <ParticleField />
         <div className="grain-overlay" />
         <ErrorBoundary>
           <Providers>{children}</Providers>

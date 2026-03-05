@@ -90,7 +90,7 @@ export default function SettingsPage() {
                   <p className="text-xs text-ink-light/30">This month&apos;s usage</p>
                   <p className="text-lg font-mono text-paper-warm/80">53 credits used</p>
                   <div className="w-32 h-1.5 rounded-full bg-ink-deep mt-2 overflow-hidden">
-                    <div className="w-[18%] h-full rounded-full bg-gradient-to-r from-violet to-pink" />
+                    <div className="w-[18%] h-full rounded-full bg-gradient-to-r from-violet to-cyan" />
                   </div>
                 </div>
               </div>
@@ -275,7 +275,7 @@ export default function SettingsPage() {
                       className="flex-1 rounded-t transition-all hover:opacity-80 cursor-pointer"
                       style={{
                         height: `${h}%`,
-                        background: `linear-gradient(to top, #7C3AED${h > 50 ? '' : '80'}, #06B6D4${h > 50 ? '' : '40'})`,
+                        background: `linear-gradient(to top, #0EA5E9${h > 50 ? '' : '80'}, #06B6D4${h > 50 ? '' : '40'})`,
                       }}
                       title={`Day ${i + 1}: ${Math.floor(h / 10)} credits`}
                     />

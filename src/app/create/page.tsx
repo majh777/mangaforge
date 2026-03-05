@@ -77,7 +77,7 @@ export default function CreatePage() {
             <motion.div className="text-center">
               <div className="relative w-32 h-32 mx-auto">
                 <div className="absolute inset-0 rounded-full border border-violet/30 animate-spin-slow" />
-                <div className="absolute inset-3 rounded-full border border-pink/30 animate-spin-reverse" />
+                <div className="absolute inset-3 rounded-full border border-cyan/30 animate-spin-reverse" />
                 <div className="absolute inset-6 rounded-full bg-gradient-to-br from-violet/20 to-cyan/20 animate-pulse" />
               </div>
               <motion.p
@@ -125,7 +125,7 @@ export default function CreatePage() {
                 if (!userTyping) setUserTyping(true);
               }}
               rows={5}
-              className="w-full bg-ink-deep/80 backdrop-blur-xl border border-ink-mid/20 rounded-2xl p-6 text-lg text-paper-warm placeholder:text-transparent focus:border-violet/40 focus:outline-none focus:shadow-[0_0_0_3px_rgba(124,58,237,0.1)] resize-none transition-all duration-300 font-[family-name:var(--font-body)]"
+              className="w-full bg-ink-deep/80 backdrop-blur-xl border border-ink-mid/20 rounded-2xl p-6 text-lg text-paper-warm placeholder:text-transparent focus:border-violet/40 focus:outline-none focus:shadow-[0_0_0_3px_rgba(14,165,233,0.1)] resize-none transition-all duration-300 font-[family-name:var(--font-body)]"
               style={{ minHeight: '160px' }}
             />
             {!prompt && (
@@ -254,7 +254,7 @@ export default function CreatePage() {
                           onClick={() => setContentRating(r)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
                             contentRating === r
-                              ? 'bg-gradient-to-r from-violet to-pink text-white'
+                              ? 'bg-gradient-to-r from-violet to-cyan text-white'
                               : 'bg-ink-wash/50 text-ink-light hover:bg-ink-mid/50'
                           }`}
                         >
