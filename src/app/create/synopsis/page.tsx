@@ -15,6 +15,24 @@ interface Synopsis {
   setting: string;
 }
 
+// Normalize API response to match Synopsis interface
+function normalizeSynopsis(data: Record<string, unknown>): Synopsis {
+  const genres = Array.isArray(data.genres)
+    ? data.genres
+    : typeof data.genre === 'string'
+      ? data.genre.split(/,\s*/)
+      : [];
+  return {
+    title: (data.title as string) || 'Untitled',
+    alternativeTitles: Array.isArray(data.alternativeTitles) ? data.alternativeTitles : [],
+    logline: (data.logline as string) || '',
+    genres,
+    synopsis: (data.synopsis as string) || '',
+    themes: Array.isArray(data.themes) ? data.themes : [],
+    setting: (data.setting as string) || '',
+  };
+}
+
 const GENERATION_STAGES = [
   { text: 'Gathering inspiration…', icon: '✨', duration: 3000 },
   { text: 'Weaving the narrative…', icon: '🕸️', duration: 4000 },
@@ -92,7 +110,8 @@ export default function SynopsisPage() {
 
         if (!res.ok) throw new Error('Generation failed');
 
-        const data = await res.json();
+        const raw = await res.json();
+        const data = normalizeSynopsis(raw);
         setSynopsis(data);
         setEditedSynopsis(data.synopsis);
         setProgress(100);
@@ -267,7 +286,7 @@ export default function SynopsisPage() {
                   </motion.h2>
 
                   {/* Alternative titles */}
-                  {synopsis.alternativeTitles.length > 0 && (
+                  {synopsis.alternativeTitles?.length > 0 && (
                     <p className="text-center text-sm text-gray-500 mb-6 italic">
                       Alt: {synopsis.alternativeTitles.join(' · ')}
                     </p>
