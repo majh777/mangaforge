@@ -8,8 +8,8 @@
   --color-ink-deep: #0D0D12;
   --color-ink-wash: #16161E;
   --color-ink-mid: #22222E;
-  --color-ink-light: #8888AA;
-  --color-paper-warm: #E8E4DE;
+  --color-ink-light: #B4B4D0;
+  --color-paper-warm: #F2F0EB;
   --color-paper-pure: #FFFFFF;
 
   /* Accent Gradient Palette — Blue Theme */
@@ -50,6 +50,8 @@ body {
   background: var(--color-ink-void);
   color: var(--color-paper-warm);
   overflow-x: hidden;
+  line-height: 1.5;
+  text-rendering: optimizeLegibility;
 }
 
 [data-theme="light"] body,
@@ -85,7 +87,7 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.025;
+  opacity: 0.015;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 256px 256px;
@@ -129,46 +131,46 @@ body {
 
 /* ========== GLASSMORPHISM ========== */
 .glass {
-  background: rgba(13, 13, 18, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(136, 136, 170, 0.08);
+  background: rgba(13, 13, 18, 0.72);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  border: 1px solid rgba(180, 180, 208, 0.2);
 }
 
 .glass-card {
-  background: rgba(13, 13, 18, 0.6);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(136, 136, 170, 0.08);
+  background: rgba(13, 13, 18, 0.78);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(180, 180, 208, 0.2);
   border-radius: 16px;
 }
 
 .glass-card-hover {
-  background: rgba(13, 13, 18, 0.6);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(136, 136, 170, 0.08);
+  background: rgba(13, 13, 18, 0.78);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(180, 180, 208, 0.2);
   border-radius: 16px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 .glass-card-hover:hover {
-  border-color: rgba(14, 165, 233, 0.25);
-  box-shadow: 0 0 30px rgba(14, 165, 233, 0.08), 0 8px 32px rgba(0, 0, 0, 0.3);
+  border-color: rgba(14, 165, 233, 0.45);
+  box-shadow: 0 0 28px rgba(14, 165, 233, 0.14), 0 12px 28px rgba(0, 0, 0, 0.34);
   transform: translateY(-2px);
 }
 
 .glass-nav {
-  background: rgba(5, 5, 7, 0.7);
-  backdrop-filter: blur(20px) saturate(1.5);
-  -webkit-backdrop-filter: blur(20px) saturate(1.5);
-  border-bottom: 1px solid rgba(136, 136, 170, 0.06);
+  background: rgba(5, 5, 7, 0.82);
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  border-bottom: 1px solid rgba(180, 180, 208, 0.18);
 }
 
 .glass-panel {
-  background: rgba(13, 13, 18, 0.8);
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  border: 1px solid rgba(136, 136, 170, 0.1);
+  background: rgba(13, 13, 18, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(180, 180, 208, 0.2);
   border-radius: 20px;
 }
 
@@ -501,15 +503,15 @@ body {
 
 /* ========== FORM INPUTS ========== */
 .input-glass {
-  background: rgba(13, 13, 18, 0.8);
-  border: 1px solid rgba(136, 136, 170, 0.1);
+  background: rgba(13, 13, 18, 0.86);
+  border: 1px solid rgba(180, 180, 208, 0.28);
   border-radius: 12px;
   color: var(--color-paper-warm);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .input-glass:focus {
-  border-color: rgba(14, 165, 233, 0.4);
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+  border-color: rgba(14, 165, 233, 0.65);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.14);
   outline: none;
 }
 
@@ -545,8 +547,13 @@ body {
   transition: border-color 0.2s, background 0.2s;
 }
 .btn-ghost:hover {
-  border-color: rgba(136, 136, 170, 0.2);
-  background: rgba(22, 22, 30, 0.8);
+  border-color: rgba(180, 180, 208, 0.32);
+  background: rgba(22, 22, 30, 0.85);
+}
+
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid rgba(14, 165, 233, 0.85);
+  outline-offset: 2px;
 }
 
 /* ========== GLOWING TITLE LETTERS ========== */

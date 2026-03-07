@@ -1,169 +1,200 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Navigation } from '@/components/navigation';
+import { CardSkeleton } from '@/components/skeletons';
+import { getClientUserId } from '@/lib/client-user';
+import type { ComicProject, ProjectStatus } from '@/lib/types';
 
 type ViewMode = 'shelf' | 'grid' | 'list';
-type ProjectStatus = 'draft' | 'in_progress' | 'published' | 'archived';
-
-interface Project {
-  id: string;
-  title: string;
-  style: string;
-  styleIcon: string;
-  chapters: number;
-  totalChapters: number;
-  pages: number;
-  words: number;
-  status: ProjectStatus;
-  coverColor: string;
-  lastEdited: string;
-  contentRating: string;
-}
-
-const DEMO_PROJECTS: Project[] = [
-  { id: '1', title: 'Blade of the Eternal Night', style: 'Shonen Manga', styleIcon: '\u26A1', chapters: 4, totalChapters: 12, pages: 88, words: 12400, status: 'in_progress', coverColor: '#0EA5E9', lastEdited: '2 hours ago', contentRating: 'PG-13' },
-  { id: '2', title: 'Moonlit Garden', style: 'Shojo Manga', styleIcon: '\uD83C\uDF38', chapters: 7, totalChapters: 10, pages: 154, words: 28000, status: 'in_progress', coverColor: '#EC4899', lastEdited: '1 day ago', contentRating: 'PG' },
-  { id: '3', title: 'Steel Requiem', style: 'Seinen Manga', styleIcon: '\uD83D\uDDE1\uFE0F', chapters: 12, totalChapters: 12, pages: 264, words: 45000, status: 'published', coverColor: '#64748B', lastEdited: '3 days ago', contentRating: 'R' },
-  { id: '4', title: 'The Jade Emperor\'s Court', style: 'Manhua', styleIcon: '\uD83D\uDC09', chapters: 2, totalChapters: 24, pages: 40, words: 6200, status: 'draft', coverColor: '#F59E0B', lastEdited: '1 week ago', contentRating: 'PG-13' },
-  { id: '5', title: 'Solo Return', style: 'Manhwa', styleIcon: '\uD83D\uDC8E', chapters: 15, totalChapters: 20, pages: 375, words: 52000, status: 'in_progress', coverColor: '#3B82F6', lastEdited: '5 hours ago', contentRating: 'PG-13' },
-  { id: '6', title: 'Paris Ink', style: 'Franco-Belgian BD', styleIcon: '\uD83C\uDFAD', chapters: 3, totalChapters: 5, pages: 132, words: 18000, status: 'in_progress', coverColor: '#10B981', lastEdited: '2 days ago', contentRating: 'PG' },
-];
 
 const STATUS_BADGES: Record<ProjectStatus, { color: string; label: string }> = {
-  draft: { color: 'bg-ink-mid/20 text-ink-light/50', label: 'Draft' },
+  draft: { color: 'bg-ink-mid/20 text-ink-light/80', label: 'Draft' },
   in_progress: { color: 'bg-violet/10 text-violet', label: 'In Progress' },
   published: { color: 'bg-forest-green/10 text-forest-green', label: 'Published' },
-  archived: { color: 'bg-ink-wash text-ink-light/30', label: 'Archived' },
+  archived: { color: 'bg-ink-wash text-ink-light/55', label: 'Archived' },
 };
 
-function ShelfView({ projects }: { projects: Project[] }) {
+function projectProgress(project: ComicProject): number {
+  const chapterCount = project.chapters.length;
+  if (chapterCount === 0) return 5;
+  if (project.status === 'published') return 100;
+  return Math.min(15 + chapterCount * 18, 95);
+}
+
+function getCover(project: ComicProject): string | null {
+  if (project.coverImage) return project.coverImage;
+  const firstImage = project.chapters[0]?.pages[0]?.imageUrl;
+  return firstImage || null;
+}
+
+function ShelfView({
+  projects,
+  onShare,
+}: {
+  projects: ComicProject[];
+  onShare: (projectId: string) => void;
+}) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-      {projects.map((p, i) => (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {projects.map((project, index) => (
         <motion.div
-          key={p.id}
-          initial={{ opacity: 0, rotateY: -20 }}
+          key={project.id}
+          initial={{ opacity: 0, rotateY: -12 }}
           animate={{ opacity: 1, rotateY: 0 }}
-          transition={{ delay: i * 0.1 }}
-          className="group cursor-pointer"
+          transition={{ delay: index * 0.05 }}
+          className="group"
         >
-          <Link href={`/library/${p.id}`}>
-            <div className="relative">
-              <div
-                className="relative h-64 glass-card overflow-hidden group-hover:border-violet/20 transition-all duration-500 group-hover:-translate-y-2 group-hover:shadow-xl group-hover:shadow-violet/5"
-                style={{ background: `linear-gradient(135deg, ${p.coverColor}15, ${p.coverColor}05, transparent)` }}
-              >
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                  <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">{p.styleIcon}</div>
-                  <h3 className="font-[family-name:var(--font-heading)] text-sm leading-tight mb-2 font-medium">{p.title}</h3>
-                  <div className="text-xs text-ink-light/30">{p.chapters}/{p.totalChapters} ch</div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-ink-deep">
-                  <div
-                    className="h-full transition-all"
-                    style={{
-                      width: `${(p.chapters / p.totalChapters) * 100}%`,
-                      background: `linear-gradient(90deg, ${p.coverColor}, ${p.coverColor}80)`,
-                    }}
-                  />
+          <div className="relative">
+            <Link href={`/share/${project.shareSlug || project.slug}`}>
+              <div className="relative h-64 glass-card overflow-hidden group-hover:border-violet/20 transition-all duration-300 group-hover:-translate-y-1">
+                {getCover(project) ? (
+                  <img src={getCover(project) || ''} alt={project.title} className="absolute inset-0 w-full h-full object-cover" />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-violet/20 to-cyan/10" />
+                )}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 to-black/10" />
+                <div className="absolute bottom-3 left-3 right-3">
+                  <h3 className="font-[family-name:var(--font-heading)] text-sm leading-tight mb-1">{project.title}</h3>
+                  <p className="text-xs text-ink-light/70">{project.chapters.length} chapters</p>
                 </div>
               </div>
-              <div className={`mt-2 text-center text-xs px-2 py-0.5 rounded-full inline-flex ${STATUS_BADGES[p.status].color}`}>
-                {STATUS_BADGES[p.status].label}
-              </div>
+            </Link>
+
+            <div className="mt-2 flex items-center justify-between">
+              <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_BADGES[project.status].color}`}>
+                {STATUS_BADGES[project.status].label}
+              </span>
+              <button onClick={() => onShare(project.id)} className="text-xs btn-ghost px-2 py-1">
+                Share
+              </button>
             </div>
-          </Link>
+          </div>
         </motion.div>
       ))}
     </div>
   );
 }
 
-function GridView({ projects }: { projects: Project[] }) {
+function GridView({
+  projects,
+  onStatusChange,
+  onDelete,
+  onShare,
+}: {
+  projects: ComicProject[];
+  onStatusChange: (projectId: string, status: ProjectStatus) => void;
+  onDelete: (projectId: string) => void;
+  onShare: (projectId: string) => void;
+}) {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {projects.map((p, i) => (
+      {projects.map((project, index) => (
         <motion.div
-          key={p.id}
-          initial={{ opacity: 0, y: 20 }}
+          key={project.id}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.08 }}
+          transition={{ delay: index * 0.05 }}
+          className="glass-card-hover overflow-hidden"
         >
-          <Link href={`/library/${p.id}`}>
-            <div className="glass-card-hover overflow-hidden group">
-              <div
-                className="h-40 flex items-center justify-center text-6xl"
-                style={{ background: `linear-gradient(135deg, ${p.coverColor}10, transparent)` }}
-              >
-                {p.styleIcon}
-              </div>
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-[family-name:var(--font-heading)] text-lg font-medium group-hover:text-violet transition-colors">{p.title}</h3>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_BADGES[p.status].color}`}>{STATUS_BADGES[p.status].label}</span>
-                </div>
-                <p className="text-sm text-ink-light/40 mb-3">{p.style}</p>
-                <div className="flex justify-between text-xs text-ink-light/30">
-                  <span>{p.chapters}/{p.totalChapters} chapters</span>
-                  <span>{p.pages} pages</span>
-                  <span>{(p.words / 1000).toFixed(1)}K words</span>
-                </div>
-                <div className="mt-3 h-1.5 rounded-full bg-ink-deep overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${(p.chapters / p.totalChapters) * 100}%`,
-                      background: `linear-gradient(90deg, ${p.coverColor}, ${p.coverColor}80)`,
-                    }}
-                  />
-                </div>
-                <div className="flex justify-between mt-2 text-xs text-ink-light/20">
-                  <span>{p.contentRating}</span>
-                  <span>{p.lastEdited}</span>
-                </div>
-              </div>
+          <Link href={`/share/${project.shareSlug || project.slug}`}>
+            <div className="h-40 relative overflow-hidden">
+              {getCover(project) ? (
+                <img src={getCover(project) || ''} alt={project.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-violet/15 to-cyan/15" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
             </div>
           </Link>
+
+          <div className="p-5">
+            <div className="flex items-start justify-between mb-2">
+              <h3 className="font-[family-name:var(--font-heading)] text-lg font-medium leading-tight">{project.title}</h3>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_BADGES[project.status].color}`}>
+                {STATUS_BADGES[project.status].label}
+              </span>
+            </div>
+
+            <p className="text-sm text-ink-light/65 mb-3">
+              {project.stylePreset} · {project.style}
+            </p>
+
+            <div className="h-1.5 rounded-full bg-ink-deep overflow-hidden mb-3">
+              <div className="h-full rounded-full bg-gradient-to-r from-violet to-cyan" style={{ width: `${projectProgress(project)}%` }} />
+            </div>
+
+            <div className="text-xs text-ink-light/60 flex justify-between mb-4">
+              <span>{project.chapters.length} chapters</span>
+              <span>{project.views} views</span>
+              <span>{project.likes} likes</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <button onClick={() => onShare(project.id)} className="btn-ghost py-2 text-xs">
+                Share
+              </button>
+              <button
+                onClick={() => onStatusChange(project.id, project.status === 'published' ? 'in_progress' : 'published')}
+                className="btn-ghost py-2 text-xs"
+              >
+                {project.status === 'published' ? 'Unpublish' : 'Publish'}
+              </button>
+            </div>
+            <button onClick={() => onDelete(project.id)} className="w-full py-2 text-xs btn-ghost text-red-200">
+              Delete
+            </button>
+          </div>
         </motion.div>
       ))}
     </div>
   );
 }
 
-function ListView({ projects }: { projects: Project[] }) {
+function ListView({
+  projects,
+  onStatusChange,
+}: {
+  projects: ComicProject[];
+  onStatusChange: (projectId: string, status: ProjectStatus) => void;
+}) {
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs text-ink-light/30 font-mono">
+      <div className="grid grid-cols-12 gap-3 px-4 py-2 text-xs text-ink-light/50 font-mono">
         <div className="col-span-4">Title</div>
-        <div className="col-span-2">Style</div>
-        <div className="col-span-1">Ch</div>
-        <div className="col-span-1">Pages</div>
+        <div className="col-span-2">Preset</div>
+        <div className="col-span-2">Chapters</div>
         <div className="col-span-2">Status</div>
-        <div className="col-span-2">Last Edited</div>
+        <div className="col-span-2">Updated</div>
       </div>
-      {projects.map((p, i) => (
+      {projects.map((project, index) => (
         <motion.div
-          key={p.id}
-          initial={{ opacity: 0, x: -10 }}
+          key={project.id}
+          initial={{ opacity: 0, x: -8 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: i * 0.05 }}
+          transition={{ delay: index * 0.04 }}
+          className="grid grid-cols-12 gap-3 px-4 py-3 rounded-lg hover:bg-ink-wash/25 items-center"
         >
-          <Link href={`/library/${p.id}`}>
-            <div className="grid grid-cols-12 gap-4 px-4 py-3 rounded-lg hover:bg-ink-wash/30 transition-colors items-center cursor-pointer">
-              <div className="col-span-4 flex items-center gap-3">
-                <span className="text-lg">{p.styleIcon}</span>
-                <span className="font-medium text-sm">{p.title}</span>
-              </div>
-              <div className="col-span-2 text-sm text-ink-light/40">{p.style}</div>
-              <div className="col-span-1 text-sm text-ink-light/40">{p.chapters}/{p.totalChapters}</div>
-              <div className="col-span-1 text-sm text-ink-light/40">{p.pages}</div>
-              <div className="col-span-2"><span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_BADGES[p.status].color}`}>{STATUS_BADGES[p.status].label}</span></div>
-              <div className="col-span-2 text-sm text-ink-light/20">{p.lastEdited}</div>
-            </div>
-          </Link>
+          <div className="col-span-4">
+            <p className="font-medium text-sm truncate">{project.title}</p>
+            <p className="text-xs text-ink-light/60 truncate">{project.style}</p>
+          </div>
+          <div className="col-span-2 text-sm text-ink-light/75 capitalize">{project.stylePreset}</div>
+          <div className="col-span-2 text-sm text-ink-light/75">{project.chapters.length}</div>
+          <div className="col-span-2">
+            <button
+              onClick={() =>
+                onStatusChange(project.id, project.status === 'published' ? 'in_progress' : 'published')
+              }
+              className={`text-xs px-2 py-1 rounded-full ${STATUS_BADGES[project.status].color}`}
+            >
+              {STATUS_BADGES[project.status].label}
+            </button>
+          </div>
+          <div className="col-span-2 text-xs text-ink-light/55">{new Date(project.updatedAt).toLocaleDateString()}</div>
         </motion.div>
       ))}
     </div>
@@ -171,62 +202,196 @@ function ListView({ projects }: { projects: Project[] }) {
 }
 
 export default function LibraryPage() {
+  const [projects, setProjects] = useState<ComicProject[]>([]);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [filter, setFilter] = useState<ProjectStatus | 'all'>('all');
+  const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtered = filter === 'all' ? DEMO_PROJECTS : DEMO_PROJECTS.filter(p => p.status === filter);
+  const userId = useMemo(() => getClientUserId(), []);
+
+  const loadProjects = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/library?userId=${encodeURIComponent(userId)}`, {
+        headers: { 'x-user-id': userId },
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch projects');
+      const data = (await response.json()) as { projects?: ComicProject[] };
+      setProjects(data.projects ?? []);
+    } catch (err) {
+      setError((err as Error).message || 'Failed to fetch projects');
+      setProjects([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      const matchesFilter = filter === 'all' ? true : project.status === filter;
+      const query = search.trim().toLowerCase();
+      const matchesQuery =
+        query.length === 0 ||
+        project.title.toLowerCase().includes(query) ||
+        project.style.toLowerCase().includes(query);
+      return matchesFilter && matchesQuery;
+    });
+  }, [projects, filter, search]);
+
+  const handleStatusChange = async (projectId: string, status: ProjectStatus) => {
+    await fetch(`/api/library/${projectId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': userId,
+      },
+      body: JSON.stringify({ status }),
+    });
+    await loadProjects();
+  };
+
+  const handleDelete = async (projectId: string) => {
+    if (!confirm('Delete this project from your library?')) return;
+
+    await fetch(`/api/library/${projectId}`, {
+      method: 'DELETE',
+      headers: { 'x-user-id': userId },
+    });
+    await loadProjects();
+  };
+
+  const handleShare = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/library/${projectId}/share`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': userId,
+        },
+        body: JSON.stringify({ makePublic: true }),
+      });
+
+      if (!response.ok) throw new Error('Failed to share project');
+
+      const data = (await response.json()) as { publicUrl?: string };
+      if (data.publicUrl) {
+        const absoluteUrl = `${window.location.origin}${data.publicUrl}`;
+        await navigator.clipboard.writeText(absoluteUrl);
+      }
+
+      await loadProjects();
+    } catch {
+      alert('Unable to create share link right now.');
+    }
+  };
 
   return (
     <main className="min-h-screen relative mesh-gradient">
       <Navigation />
 
       <div className="max-w-7xl mx-auto px-4 pt-24 pb-32">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-4">
           <div>
             <p className="text-sm font-mono text-gold-premium mb-2 tracking-wider uppercase">Library</p>
             <h1 className="font-[family-name:var(--font-heading)] text-4xl font-light mb-2">
-              The <span className="gradient-text font-semibold">Archive</span>
+              Your <span className="gradient-text font-semibold">Collection</span>
             </h1>
-            <p className="text-ink-light/40">{DEMO_PROJECTS.length} projects &middot; {DEMO_PROJECTS.reduce((a, p) => a + p.pages, 0)} pages total</p>
+            <p className="text-ink-light/70">
+              {projects.length} projects · {projects.reduce((acc, project) => acc + project.chapters.length, 0)} chapters total
+            </p>
           </div>
-          <div className="flex items-center gap-4">
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <input
+              type="text"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search your library"
+              className="input-glass px-4 py-2.5 text-sm w-full sm:w-56"
+            />
+
             <div className="flex gap-1 glass rounded-lg p-1">
-              {(['all', 'in_progress', 'published', 'draft'] as const).map(f => (
+              {(['all', 'in_progress', 'published', 'draft', 'archived'] as const).map((entry) => (
                 <button
-                  key={f}
-                  onClick={() => setFilter(f)}
-                  className={`px-3 py-1.5 rounded-md text-xs transition-all ${filter === f ? 'bg-violet/15 text-paper-warm border border-violet/10' : 'text-ink-light/40 hover:text-paper-warm'}`}
+                  key={entry}
+                  onClick={() => setFilter(entry)}
+                  className={`px-3 py-1.5 rounded-md text-xs transition-all ${
+                    filter === entry
+                      ? 'bg-violet/15 text-paper-warm border border-violet/10'
+                      : 'text-ink-light/60 hover:text-paper-warm'
+                  }`}
                 >
-                  {f === 'all' ? 'All' : f === 'in_progress' ? 'Active' : f.charAt(0).toUpperCase() + f.slice(1)}
+                  {entry === 'all' ? 'All' : entry.replace('_', ' ')}
                 </button>
               ))}
             </div>
+
             <div className="flex gap-1 glass rounded-lg p-1">
-              {([['shelf', '\uD83D\uDCDA'], ['grid', '\u229E'], ['list', '\u2261']] as [ViewMode, string][]).map(([mode, icon]) => (
+              {([
+                ['shelf', '📚'],
+                ['grid', '⊞'],
+                ['list', '≡'],
+              ] as [ViewMode, string][]).map(([mode, icon]) => (
                 <button
                   key={mode}
                   onClick={() => setViewMode(mode)}
-                  className={`px-3 py-1.5 rounded-md text-sm transition-all ${viewMode === mode ? 'bg-violet/15 text-paper-warm' : 'text-ink-light/40 hover:text-paper-warm'}`}
+                  className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+                    viewMode === mode ? 'bg-violet/15 text-paper-warm' : 'text-ink-light/60 hover:text-paper-warm'
+                  }`}
                 >
                   {icon}
                 </button>
               ))}
             </div>
-            <Link href="/create">
-              <button className="px-4 py-2 rounded-lg btn-primary text-sm">
-                + New Project
-              </button>
+
+            <Link href="/create" className="btn-primary px-4 py-2 text-sm text-center">
+              + New Project
             </Link>
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div key={viewMode + filter} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {viewMode === 'shelf' && <ShelfView projects={filtered} />}
-            {viewMode === 'grid' && <GridView projects={filtered} />}
-            {viewMode === 'list' && <ListView projects={filtered} />}
-          </motion.div>
-        </AnimatePresence>
+        {error && <div className="glass-card p-4 border border-red-400/30 text-red-200 text-sm mb-6">{error}</div>}
+
+        {loading ? (
+          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }, (_, i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="glass-card p-10 text-center">
+            <h2 className="font-[family-name:var(--font-heading)] text-2xl mb-2">No projects found</h2>
+            <p className="text-ink-light/65 mb-6">Start your first comic and it will appear here.</p>
+            <Link href="/create" className="btn-primary px-6 py-3 text-sm inline-block">
+              Create a project
+            </Link>
+          </div>
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div key={`${viewMode}-${filter}-${search}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {viewMode === 'shelf' && <ShelfView projects={filteredProjects} onShare={handleShare} />}
+              {viewMode === 'grid' && (
+                <GridView
+                  projects={filteredProjects}
+                  onStatusChange={handleStatusChange}
+                  onDelete={handleDelete}
+                  onShare={handleShare}
+                />
+              )}
+              {viewMode === 'list' && <ListView projects={filteredProjects} onStatusChange={handleStatusChange} />}
+            </motion.div>
+          </AnimatePresence>
+        )}
       </div>
     </main>
   );

@@ -1,7 +1,6 @@
 // Story Bible — shared state that accumulates through the creation flow.
-// Stored in sessionStorage under 'mangaforge_bible'.
 
-const BIBLE_KEY = 'mangaforge_bible';
+import { getSessionJSON, setSessionJSON } from '@/lib/storage';
 
 export interface ChapterSummary {
   chapterNumber: number;
@@ -19,35 +18,38 @@ export interface StoryBible {
     contentRating: string;
     artDetail: string;
     colorMode: string;
+    stylePreset?: string;
+    panelTemplate?: string;
   };
   synopsis?: Record<string, unknown>;
   hiddenArc?: string;
   chapterBreakdown?: Array<{ number: number; title: string; summary: string; hookType: string }>;
-  characters?: unknown[];
+  characters?: Array<Record<string, unknown>>;
   chapters: ChapterSummary[];
 }
 
 export function loadBible(): StoryBible | null {
-  if (typeof window === 'undefined') return null;
-  const raw = sessionStorage.getItem(BIBLE_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw) as StoryBible;
-  } catch {
-    return null;
-  }
+  return getSessionJSON<StoryBible>('bible');
 }
 
 export function saveBible(bible: StoryBible): void {
-  if (typeof window === 'undefined') return;
-  sessionStorage.setItem(BIBLE_KEY, JSON.stringify(bible));
+  setSessionJSON('bible', bible);
 }
 
 export function updateBible(patch: Partial<StoryBible>): StoryBible {
   const existing = loadBible();
   const updated: StoryBible = {
     prompt: '',
-    config: { style: '', pagesPerChapter: 20, panelsPerPage: 6, contentRating: 'PG-13', artDetail: 'High', colorMode: 'Auto' },
+    config: {
+      style: '',
+      pagesPerChapter: 20,
+      panelsPerPage: 6,
+      contentRating: 'PG-13',
+      artDetail: 'High',
+      colorMode: 'Auto',
+      stylePreset: 'manga',
+      panelTemplate: 'classic-6-grid',
+    },
     chapters: [],
     ...existing,
     ...patch,
@@ -58,9 +60,11 @@ export function updateBible(patch: Partial<StoryBible>): StoryBible {
 
 export function addChapterToBible(chapter: ChapterSummary): StoryBible {
   const bible = loadBible();
-  if (!bible) throw new Error('No bible found');
-  const chapters = bible.chapters.filter(c => c.chapterNumber !== chapter.chapterNumber);
+  if (!bible) throw new Error('No story bible found');
+
+  const chapters = bible.chapters.filter((entry) => entry.chapterNumber !== chapter.chapterNumber);
   chapters.push(chapter);
   chapters.sort((a, b) => a.chapterNumber - b.chapterNumber);
+
   return updateBible({ chapters });
 }

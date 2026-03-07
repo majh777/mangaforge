@@ -1,28 +1,130 @@
 import { NextResponse } from 'next/server';
-import { generateText } from '@/lib/ai';
+import { calculateChapterCost, generateText } from '@/lib/ai';
+import { withApiHandler } from '@/lib/server/api';
+import { ApiError } from '@/lib/server/errors';
+import { readNumber, readString } from '@/lib/server/validation';
+import { assertWithinDailyLimit, recordUsage } from '@/lib/server/usage';
+
+interface GenerateChapterBody {
+  synopsis?: Record<string, unknown>;
+  characters?: Array<Record<string, unknown>>;
+  chapterNumber?: number;
+  style?: string;
+  stylePreset?: string;
+  panelTemplate?: string;
+  pageCount?: number;
+  panelsPerPage?: number;
+  hiddenArc?: string;
+  contentRating?: string;
+  artDetail?: string;
+  colorMode?: string;
+  previousChapters?: Array<{ chapterNumber: number; title: string; summary: string }>;
+}
+
+function parseJsonSafe(raw: string): Record<string, unknown> | null {
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+    }
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
-  try {
-    const { synopsis, characters, chapterNumber, style, pageCount, panelsPerPage, hiddenArc, contentRating, artDetail, colorMode, previousChapters } = await request.json();
+  return withApiHandler<GenerateChapterBody>(request, { routeId: 'generate:chapter', rateLimit: 'strict' }, async (ctx) => {
+    if (!ctx.body.synopsis || typeof ctx.body.synopsis !== 'object') {
+      throw new ApiError(400, 'VALIDATION_ERROR', 'synopsis is required');
+    }
 
-    // Step 1: Generate the chapter script
-    const scriptPrompt = `You are a master manga scriptwriter. Create a detailed page-by-page script for Chapter ${chapterNumber}.
+    const chapterNumber = readNumber(ctx.body.chapterNumber ?? 1, {
+      field: 'chapterNumber',
+      required: false,
+      fallback: 1,
+      min: 1,
+      max: 999,
+    });
 
-SYNOPSIS: ${JSON.stringify(synopsis)}
-CHARACTERS: ${JSON.stringify(characters?.map((c: Record<string, unknown>) => ({ name: c.name, role: c.role, bioShort: c.bioShort })))}
-HIDDEN ARC PLAN: ${hiddenArc || 'Not provided'}
+    const style = readString(ctx.body.style, {
+      field: 'style',
+      required: false,
+      fallback: 'shonen',
+      max: 120,
+    });
+
+    const stylePreset = readString(ctx.body.stylePreset, {
+      field: 'stylePreset',
+      required: false,
+      fallback: 'manga',
+      max: 50,
+    });
+
+    const panelTemplate = readString(ctx.body.panelTemplate, {
+      field: 'panelTemplate',
+      required: false,
+      fallback: 'classic-6-grid',
+      max: 60,
+    });
+
+    const pageCount = readNumber(ctx.body.pageCount ?? 20, {
+      field: 'pageCount',
+      required: false,
+      fallback: 20,
+      min: 4,
+      max: 120,
+    });
+
+    const panelsPerPage = readNumber(ctx.body.panelsPerPage ?? 6, {
+      field: 'panelsPerPage',
+      required: false,
+      fallback: 6,
+      min: 1,
+      max: 12,
+    });
+
+    const chapterCost = calculateChapterCost(pageCount);
+    await assertWithinDailyLimit(ctx.userId, ctx.userTier, chapterCost);
+
+    const characterOutline = Array.isArray(ctx.body.characters)
+      ? ctx.body.characters.map((character) => ({
+          name: character.name,
+          role: character.role,
+          bioShort: character.bioShort,
+        }))
+      : [];
+
+    const previousChapters = Array.isArray(ctx.body.previousChapters)
+      ? ctx.body.previousChapters
+      : [];
+
+    const scriptPrompt = `You are a master comic scriptwriter. Create a detailed page-by-page script for Chapter ${chapterNumber}.
+
+SYNOPSIS: ${JSON.stringify(ctx.body.synopsis)}
+CHARACTERS: ${JSON.stringify(characterOutline)}
+HIDDEN ARC PLAN: ${ctx.body.hiddenArc || 'Not provided'}
 CHAPTER NUMBER: ${chapterNumber}
-PAGES: ${pageCount || 20}
-PANELS PER PAGE: ${panelsPerPage || 6}
+PAGES: ${pageCount}
+PANELS PER PAGE: ${panelsPerPage}
 STYLE: ${style}
-CONTENT RATING: ${contentRating || 'PG-13'}
-ART DETAIL LEVEL: ${artDetail || 'High'}
-COLOR MODE: ${colorMode || 'Auto'}
-${previousChapters?.length ? `PREVIOUS CHAPTER SUMMARIES:\n${previousChapters.map((ch: { chapterNumber: number; title: string; summary: string }) => `Chapter ${ch.chapterNumber} "${ch.title}": ${ch.summary}`).join('\n')}` : ''}
+STYLE PRESET: ${stylePreset}
+PANEL TEMPLATE: ${panelTemplate}
+CONTENT RATING: ${ctx.body.contentRating || 'PG-13'}
+ART DETAIL LEVEL: ${ctx.body.artDetail || 'High'}
+COLOR MODE: ${ctx.body.colorMode || 'Auto'}
+${
+  previousChapters.length
+    ? `PREVIOUS CHAPTER SUMMARIES:\n${previousChapters
+        .map((ch) => `Chapter ${ch.chapterNumber} \"${ch.title}\": ${ch.summary}`)
+        .join('\n')}`
+    : ''
+}
 
 Generate a JSON response:
 {
   "chapterTitle": "Chapter title",
+  "chapterSummary": "2-3 sentence summary",
   "pages": [
     {
       "pageNumber": 1,
@@ -31,49 +133,45 @@ Generate a JSON response:
         {
           "panelNumber": 1,
           "shotType": "wide|medium|close-up|extreme-close-up|bird-eye|worm-eye",
-          "description": "Detailed visual description of what happens in this panel",
-          "dialogue": [{ "character": "Name", "text": "Dialogue text in English" }],
+          "description": "Detailed visual description",
+          "dialogue": [{ "character": "Name", "text": "Dialogue in English" }],
           "sfx": ["WHOOSH", "CRACK"],
           "emotion": "tense|calm|excited|sad|angry|mysterious"
         }
       ],
-      "imagePrompt": "A complete image generation prompt for this full manga page including all panels, in ${style} style"
+      "imagePrompt": "A complete image generation prompt for this full comic page"
     }
   ],
   "hookType": "Cliffhanger|Revelation|Question|Emotional|Escalation",
   "hookTeaseLine": "A compelling tease for the next chapter",
   "characterStatusUpdates": [
-    { "name": "Character name", "status": "Brief emotional/narrative status update" }
+    { "name": "Character name", "status": "Narrative status update" }
   ]
 }
 
 CRITICAL RULES:
-1. The last page MUST end on a powerful hook. Make the reader unable to stop.
-2. All dialogue must be in English.
-3. Vary panel layouts — don't repeat the same grid. Use splashes, irregular panels, bleeds.
-4. Include speed lines, screentones, and manga SFX descriptions.
-5. The chapter must advance the hidden arc subtly.`;
+1. The final page MUST end on a powerful hook.
+2. Keep visual continuity with prior chapters.
+3. Vary panel layouts and pacing.
+4. Use concise, actionable image prompts for generation.
+5. Advance the hidden arc subtly.`;
 
-    const scriptResult = await generateText(scriptPrompt, 'You are a master manga scriptwriter. Always respond in valid JSON.');
+    const scriptResult = await generateText(
+      scriptPrompt,
+      'You are an elite comic scriptwriter. Always respond with valid JSON only.'
+    );
 
-    let script;
-    try {
-      script = JSON.parse(scriptResult);
-    } catch {
-      const jsonMatch = scriptResult.match(/\{[\s\S]*\}/);
-      script = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
-    }
-
+    const script = parseJsonSafe(scriptResult);
     if (!script) {
-      return NextResponse.json({ error: 'Failed to generate script' }, { status: 500 });
+      throw new ApiError(500, 'GENERATION_FAILED', 'Failed to generate chapter script');
     }
+
+    await recordUsage(ctx.userId, 'generate_chapter_script', chapterCost);
 
     return NextResponse.json({
       script,
-      message: 'Script generated. Use /api/generate-portrait for individual pages.',
+      creditCost: chapterCost,
+      message: 'Script generated. Use /api/generate-pages for batched image generation.',
     });
-  } catch (error) {
-    console.error('Chapter generation error:', error);
-    return NextResponse.json({ error: 'Failed to generate chapter' }, { status: 500 });
-  }
+  });
 }

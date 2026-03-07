@@ -52,18 +52,44 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InkForge — Where Stories Become Art",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://mangaforge-chi.vercel.app'),
+  title: {
+    default: 'InkForge — AI Comic Studio',
+    template: '%s | InkForge',
+  },
   description:
-    "Create stunning manga, comics, manhwa, and webtoons with AI. From prompt to published — forge your stories into art.",
+    'Create manga, western comics, and webtoons with AI. Plan stories, generate chapters, and publish your work in minutes.',
   keywords: [
-    "manga creator",
-    "AI manga",
-    "comic generator",
-    "webtoon creator",
-    "manhwa",
-    "AI art",
-    "InkForge",
+    'inkforge',
+    'comic creator',
+    'AI comic studio',
+    'manga creator',
+    'webtoon builder',
+    'AI storytelling',
   ],
+  openGraph: {
+    title: 'InkForge — AI Comic Studio',
+    description:
+      'Create manga, western comics, and webtoons with AI. Plan stories, generate chapters, and publish your work in minutes.',
+    url: 'https://mangaforge-chi.vercel.app',
+    siteName: 'InkForge',
+    type: 'website',
+    images: [
+      {
+        url: '/og-image.svg',
+        width: 1200,
+        height: 630,
+        alt: 'InkForge — AI Comic Studio',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'InkForge — AI Comic Studio',
+    description:
+      'Create manga, western comics, and webtoons with AI. Plan stories, generate chapters, and publish your work in minutes.',
+    images: ['/og-image.svg'],
+  },
 };
 
 export default function RootLayout({

@@ -5,7 +5,7 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Text3D, Center, Float } from '@react-three/drei';
 import * as THREE from 'three';
 
-function Logo3D() {
+function InkLogoMesh() {
   const meshRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
@@ -25,7 +25,7 @@ function Logo3D() {
             bevelSize={0.02}
             bevelThickness={0.02}
           >
-            MangaForge
+            InkForge
             <meshStandardMaterial
               color="#FF6B9D"
               metalness={0.9}
@@ -40,14 +40,14 @@ function Logo3D() {
   );
 }
 
-export default function MangaLogo3D() {
+export default function InkLogo3D() {
   return (
     <div className="h-32 w-full">
       <Canvas camera={{ position: [0, 0, 6], fov: 50 }} dpr={[1, 2]}>
         <ambientLight intensity={0.5} />
         <pointLight position={[5, 5, 5]} intensity={1} color="#FF6B9D" />
         <pointLight position={[-5, -3, 3]} intensity={0.5} color="#00F5FF" />
-        <Logo3D />
+        <InkLogoMesh />
       </Canvas>
     </div>
   );

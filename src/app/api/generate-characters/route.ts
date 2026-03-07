@@ -1,19 +1,55 @@
 import { NextResponse } from 'next/server';
-import { generateText } from '@/lib/ai';
+import { CREDIT_COSTS, generateText } from '@/lib/ai';
+import { withApiHandler } from '@/lib/server/api';
+import { readString } from '@/lib/server/validation';
+import { assertWithinDailyLimit, recordUsage } from '@/lib/server/usage';
+import { ApiError } from '@/lib/server/errors';
+
+interface GenerateCharactersBody {
+  synopsis?: Record<string, unknown>;
+  style?: string;
+  contentRating?: string;
+  artDetail?: string;
+  colorMode?: string;
+}
+
+function parseJsonSafe(raw: string): Record<string, unknown> {
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+    }
+    return { characters: [] };
+  }
+}
 
 export async function POST(request: Request) {
-  try {
-    const { synopsis, style, contentRating, artDetail, colorMode } = await request.json();
+  return withApiHandler<GenerateCharactersBody>(request, { routeId: 'generate:characters', rateLimit: 'strict' }, async (ctx) => {
+    if (!ctx.body.synopsis || typeof ctx.body.synopsis !== 'object') {
+      throw new ApiError(400, 'VALIDATION_ERROR', 'synopsis is required');
+    }
 
-    const systemInstruction = `You are MangaForge's character creation engine. You design psychologically complex characters using a 10-model personality framework. Always respond in valid JSON.`;
+    const style = readString(ctx.body.style, {
+      field: 'style',
+      required: false,
+      fallback: 'shonen',
+      max: 120,
+    });
 
-    const userPrompt = `Based on this manga synopsis, create a cast of characters:
+    await assertWithinDailyLimit(ctx.userId, ctx.userTier, CREDIT_COSTS.characters);
 
-SYNOPSIS: ${JSON.stringify(synopsis)}
+    const systemInstruction =
+      "You are InkForge's character creation engine. You design psychologically complex characters using a 10-model personality framework. Always respond in valid JSON.";
+
+    const userPrompt = `Based on this comic synopsis, create a cast of characters:
+
+SYNOPSIS: ${JSON.stringify(ctx.body.synopsis)}
 ART STYLE: ${style}
-CONTENT RATING: ${contentRating || 'PG-13'}
-ART DETAIL LEVEL: ${artDetail || 'High'}
-COLOR MODE: ${colorMode || 'Auto'}
+CONTENT RATING: ${ctx.body.contentRating || 'PG-13'}
+ART DETAIL LEVEL: ${ctx.body.artDetail || 'High'}
+COLOR MODE: ${ctx.body.colorMode || 'Auto'}
 
 Generate a JSON response with this exact structure:
 {
@@ -30,39 +66,27 @@ Generate a JSON response with this exact structure:
       "personalityTraits": ["trait1", "trait2", "trait3", "trait4", "trait5"],
       "relationships": ["relationship description with other characters"],
       "personalityMatrix": {
-        "bigFive": { "openness": 75, "conscientiousness": 45, "extraversion": 80, "agreeableness": 60, "neuroticism": 35 },
         "mbti": "ENFP",
         "enneagram": "7w8",
-        "attachmentStyle": "secure",
-        "maslowLevel": "esteem",
-        "moralFoundations": { "care": 8, "fairness": 7, "loyalty": 9, "authority": 3, "sanctity": 4, "liberty": 9 },
-        "jungianArchetype": { "primary": "The Hero", "secondary": "The Rebel" },
-        "eq": { "selfAwareness": 6, "selfRegulation": 4, "motivation": 9, "empathy": 7, "socialSkills": 8 },
-        "defenseMechanisms": { "primary": "humor", "secondary": "sublimation" },
-        "loveLanguages": ["quality_time", "words_of_affirmation", "acts_of_service", "physical_touch", "receiving_gifts"]
+        "bigFive": {
+          "openness": 75,
+          "conscientiousness": 45,
+          "extraversion": 80,
+          "agreeableness": 60,
+          "neuroticism": 35
+        }
       }
     }
   ]
 }
 
-Create 3-5 characters minimum. Include at least one protagonist, one antagonist, and one supporting character. Make each character psychologically rich and distinct. The personality matrix must be internally consistent — a character's MBTI, Big Five, Enneagram, and defense mechanisms should all tell the same story.`;
+Create 3-5 characters minimum. Include at least one protagonist, one antagonist, and one supporting character.`;
 
     const result = await generateText(userPrompt, systemInstruction);
+    const parsed = parseJsonSafe(result);
 
-    let parsed;
-    try {
-      parsed = JSON.parse(result);
-    } catch {
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { characters: [] };
-    }
+    await recordUsage(ctx.userId, 'generate_characters', CREDIT_COSTS.characters);
 
     return NextResponse.json(parsed);
-  } catch (error) {
-    console.error('Character generation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate characters' },
-      { status: 500 }
-    );
-  }
+  });
 }

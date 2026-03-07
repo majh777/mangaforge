@@ -1,27 +1,83 @@
 import { NextResponse } from 'next/server';
-import { generateText } from '@/lib/ai';
+import { CREDIT_COSTS, generateText } from '@/lib/ai';
+import { withApiHandler } from '@/lib/server/api';
+import { readNumber, readString } from '@/lib/server/validation';
+import { assertWithinDailyLimit, recordUsage } from '@/lib/server/usage';
+
+interface GenerateSynopsisBody {
+  prompt?: string;
+  style?: string;
+  pagesPerChapter?: number;
+  panelsPerPage?: number;
+  contentRating?: string;
+  artDetail?: string;
+  colorMode?: string;
+}
+
+function parseJsonSafe(raw: string): Record<string, unknown> {
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]) as Record<string, unknown>;
+    }
+    return { synopsis: raw };
+  }
+}
 
 export async function POST(request: Request) {
-  try {
-    const { prompt, style, pagesPerChapter, panelsPerPage, contentRating, artDetail, colorMode } = await request.json();
+  return withApiHandler<GenerateSynopsisBody>(request, { routeId: 'generate:synopsis', rateLimit: 'strict' }, async (ctx) => {
+    const prompt = readString(ctx.body.prompt, {
+      field: 'prompt',
+      min: 10,
+      max: 2000,
+    });
 
-    const systemInstruction = `You are MangaForge's narrative AI engine. You create compelling manga/comic synopses with deep narrative structures. You always respond in valid JSON.`;
+    const style = readString(ctx.body.style, {
+      field: 'style',
+      required: false,
+      fallback: 'shonen',
+      max: 120,
+    });
 
-    const userPrompt = `Create a detailed manga synopsis for the following concept:
+    const pagesPerChapter = readNumber(ctx.body.pagesPerChapter ?? 20, {
+      field: 'pagesPerChapter',
+      required: false,
+      fallback: 20,
+      min: 4,
+      max: 120,
+    });
+
+    const panelsPerPage = readNumber(ctx.body.panelsPerPage ?? 6, {
+      field: 'panelsPerPage',
+      required: false,
+      fallback: 6,
+      min: 1,
+      max: 12,
+    });
+
+    await assertWithinDailyLimit(ctx.userId, ctx.userTier, CREDIT_COSTS.synopsis);
+
+    const systemInstruction =
+      "You are InkForge's narrative AI engine. You create compelling manga/comic synopses with deep narrative structures. Always respond in valid JSON.";
+
+    const userPrompt = `Create a detailed comic synopsis for the following concept:
 
 CONCEPT: ${prompt}
 STYLE: ${style}
-PAGES PER CHAPTER: ${pagesPerChapter || 20}
-PANELS PER PAGE: ${panelsPerPage || 6}
-CONTENT RATING: ${contentRating || 'PG-13'}
-ART DETAIL LEVEL: ${artDetail || 'High'}
-COLOR MODE: ${colorMode || 'Auto'}
+PAGES PER CHAPTER: ${pagesPerChapter}
+PANELS PER PAGE: ${panelsPerPage}
+CONTENT RATING: ${ctx.body.contentRating || 'PG-13'}
+ART DETAIL LEVEL: ${ctx.body.artDetail || 'High'}
+COLOR MODE: ${ctx.body.colorMode || 'Auto'}
 
 Generate a JSON response with this exact structure:
 {
-  "title": "The manga title",
+  "title": "The comic title",
+  "alternativeTitles": ["Optional alt title"],
   "logline": "A compelling one-sentence pitch",
-  "genre": "Primary genre",
+  "genres": ["Primary genre", "Secondary genre"],
   "themes": ["theme1", "theme2", "theme3"],
   "setting": "Detailed world/setting description",
   "synopsis": "A 3-5 paragraph detailed synopsis covering the main plot arc",
@@ -30,28 +86,16 @@ Generate a JSON response with this exact structure:
   ],
   "estimatedChapters": 12,
   "toneKeywords": ["dark", "epic", "emotional"],
-  "hiddenArc": "A secret overarching narrative that unfolds across the entire series, invisible to the reader but guiding every chapter's development"
+  "hiddenArc": "A secret overarching narrative that unfolds across the entire series"
 }
 
-Make the synopsis compelling, with genuine narrative depth. The hidden arc should be a masterful long-game that makes re-reading revelatory. Include at least 8 chapter breakdowns.`;
+Make the synopsis compelling, with genuine narrative depth. Include at least 8 chapter breakdowns.`;
 
     const result = await generateText(userPrompt, systemInstruction);
+    const parsed = parseJsonSafe(result);
 
-    let parsed;
-    try {
-      parsed = JSON.parse(result);
-    } catch {
-      // Try to extract JSON from the response
-      const jsonMatch = result.match(/\{[\s\S]*\}/);
-      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { title: 'Untitled', synopsis: result, logline: prompt };
-    }
+    await recordUsage(ctx.userId, 'generate_synopsis', CREDIT_COSTS.synopsis);
 
     return NextResponse.json(parsed);
-  } catch (error) {
-    console.error('Synopsis generation error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate synopsis' },
-      { status: 500 }
-    );
-  }
+  });
 }

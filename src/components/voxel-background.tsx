@@ -40,7 +40,7 @@ class ThreeErrorBoundary extends React.Component<
     return { hasError: true };
   }
   componentDidCatch(err: Error) {
-    console.warn('[MangaForge] WebGL background failed, using CSS fallback:', err.message);
+    console.warn('[InkForge] WebGL background failed, using CSS fallback:', err.message);
   }
   render() {
     if (this.state.hasError) return this.props.fallback;

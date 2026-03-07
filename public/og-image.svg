@@ -1,0 +1,29 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#050507"/>
+      <stop offset="1" stop-color="#0D0D12"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="190" y1="146" x2="900" y2="510" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0EA5E9"/>
+      <stop offset="0.5" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1030" cy="110" r="210" fill="#0EA5E9" opacity="0.14"/>
+  <circle cx="160" cy="540" r="220" fill="#06B6D4" opacity="0.12"/>
+  <rect x="120" y="120" width="960" height="390" rx="28" fill="#0F0F17" stroke="#2B2B40"/>
+  <text x="180" y="250" fill="url(#accent)" font-size="92" font-family="Arial, Helvetica, sans-serif" font-weight="800">
+    InkForge
+  </text>
+  <text x="180" y="320" fill="#F2F0EB" opacity="0.95" font-size="44" font-family="Arial, Helvetica, sans-serif" font-weight="500">
+    AI Comic Studio
+  </text>
+  <text x="180" y="378" fill="#B4B4D0" font-size="31" font-family="Arial, Helvetica, sans-serif">
+    Create manga, western comics, and webtoons.
+  </text>
+  <text x="180" y="422" fill="#B4B4D0" font-size="31" font-family="Arial, Helvetica, sans-serif">
+    Generate chapters, share publicly, export instantly.
+  </text>
+</svg>
