@@ -84,12 +84,19 @@ export default function ChapterPage() {
     const synopsis = getSessionJSON<Record<string, unknown>>('synopsis');
     const characters = getSessionJSON<Array<Record<string, unknown>>>('characters');
 
-    if (!config || !synopsis || !characters) {
+    if (!synopsis || !characters) {
       router.push('/create');
       return;
     }
 
-    const resolvedConfig = config;
+    const resolvedConfig = config || {
+      style: 'shonen_manga',
+      pagesPerChapter: 8,
+      panelsPerPage: 6,
+      contentRating: 'PG-13',
+      artDetail: 'High',
+      colorMode: 'Auto',
+    } as CreateConfig;
     const resolvedSynopsis = synopsis;
     const resolvedCharacters = characters;
 

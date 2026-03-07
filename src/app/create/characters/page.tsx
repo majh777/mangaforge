@@ -290,16 +290,15 @@ export default function CharactersPage() {
   const handleBeginChapter = async () => {
     if (!characters.length) return;
 
-    const config = getSessionJSON<CreateConfig>('config');
-    if (!config) return;
-
-    const userId = config.userId || getClientUserId();
-
+    // Save characters to session storage regardless of config state
     setSessionJSON('characters', characters);
     updateBible({ characters: characters as unknown as Array<Record<string, unknown>> });
 
+    const config = getSessionJSON<CreateConfig>('config');
+    const userId = config?.userId || getClientUserId();
+
     const draftProjectId = getSessionText('draftProjectId');
-    if (draftProjectId) {
+    if (draftProjectId && config) {
       fetch(`/api/library/${draftProjectId}`, {
         method: 'PATCH',
         headers: {
@@ -312,7 +311,14 @@ export default function CharactersPage() {
       });
     }
 
+    // Always navigate — chapter page has its own fallback defaults
     router.push('/create/chapter');
+    // Fallback: force navigation if router.push doesn't work within 500ms
+    setTimeout(() => {
+      if (window.location.pathname !== '/create/chapter') {
+        window.location.href = '/create/chapter';
+      }
+    }, 500);
   };
 
   return (
