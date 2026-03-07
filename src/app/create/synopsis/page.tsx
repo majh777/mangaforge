@@ -3,23 +3,34 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { loadBible, updateBible } from '@/lib/bible';
 
-interface Synopsis {
+interface ChapterEntry {
+  number: number;
   title: string;
-  alternativeTitles: string[];
+  summary: string;
+  hookType: string;
+}
+
+interface SynopsisData {
+  title: string;
+  alternativeTitles?: string[];
   logline: string;
   genres: string[];
   synopsis: string;
   themes: string[];
   setting: string;
+  chapterBreakdown?: ChapterEntry[];
+  hiddenArc?: string;
+  estimatedChapters?: number;
+  toneKeywords?: string[];
 }
 
-function normalizeSynopsis(data: Record<string, unknown>): Synopsis {
+function normalizeSynopsis(data: Record<string, unknown>): SynopsisData {
   const genres = Array.isArray(data.genres)
     ? data.genres
     : typeof data.genre === 'string'
-      ? data.genre.split(/,\s*/)
+      ? (data.genre as string).split(/,\s*/)
       : [];
   return {
     title: (data.title as string) || 'Untitled',
@@ -29,6 +40,10 @@ function normalizeSynopsis(data: Record<string, unknown>): Synopsis {
     synopsis: (data.synopsis as string) || '',
     themes: Array.isArray(data.themes) ? data.themes : [],
     setting: (data.setting as string) || '',
+    chapterBreakdown: Array.isArray(data.chapterBreakdown) ? data.chapterBreakdown : [],
+    hiddenArc: (data.hiddenArc as string) || undefined,
+    estimatedChapters: (data.estimatedChapters as number) || undefined,
+    toneKeywords: Array.isArray(data.toneKeywords) ? data.toneKeywords : [],
   };
 }
 
@@ -51,17 +66,22 @@ export default function SynopsisPage() {
   const router = useRouter();
   const [isGenerating, setIsGenerating] = useState(true);
   const [stage, setStage] = useState(0);
-  const [synopsis, setSynopsis] = useState<Synopsis | null>(null);
+  const [synopsis, setSynopsis] = useState<SynopsisData | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedSynopsis, setEditedSynopsis] = useState('');
   const [tipIndex, setTipIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [config, setConfig] = useState<Record<string, unknown> | null>(null);
+  const [userPrompt, setUserPrompt] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [showHiddenArc, setShowHiddenArc] = useState(false);
 
   useEffect(() => {
     const saved = sessionStorage.getItem('mangaforge_config');
     if (saved) {
-      setConfig(JSON.parse(saved));
+      const parsed = JSON.parse(saved);
+      setConfig(parsed);
+      setUserPrompt(parsed.prompt || '');
     } else {
       router.push('/create');
     }
@@ -96,6 +116,7 @@ export default function SynopsisPage() {
 
     const generate = async () => {
       try {
+        setError(null);
         const res = await fetch('/api/generate-synopsis', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -109,22 +130,20 @@ export default function SynopsisPage() {
         setSynopsis(data);
         setEditedSynopsis(data.synopsis);
         setProgress(100);
+
+        // Update the story bible with synopsis data
+        updateBible({
+          synopsis: raw,
+          hiddenArc: data.hiddenArc,
+          chapterBreakdown: data.chapterBreakdown,
+        });
+
         setTimeout(() => setIsGenerating(false), 800);
       } catch (err) {
         console.error('Synopsis generation error:', err);
-        const demo: Synopsis = {
-          title: 'The Forge of Shadows',
-          alternativeTitles: ['Shadow Forge', 'The Ink Between Worlds'],
-          logline: 'A young blacksmith discovers her forge can shape not just metal, but the fabric of reality itself.',
-          genres: ['Fantasy', 'Action', 'Coming of Age'],
-          synopsis: `In the mountain city of Kurogane, fifteen-year-old Akari inherits her grandfather's ancient forge. What she discovers inside changes everything \u2014 the forge doesn't just shape metal. It shapes reality.\n\nWhen she accidentally forges a blade that cuts through dimensions, she attracts the attention of the Shadow Weavers, an ancient order that has guarded the boundary between worlds for centuries. They offer her a choice: join them, or have her memories erased.\n\nBut Akari is no ordinary blacksmith. The fire in her forge burns with a light that hasn't been seen in a thousand years \u2014 the Primordial Flame, capable of rewriting the laws of existence itself. And the Shadow Weavers aren't the only ones who want it.`,
-          themes: ['Identity', 'Legacy', 'Power & Responsibility'],
-          setting: 'A fantastical version of feudal Japan where master craftsmen can imbue objects with supernatural properties.',
-        };
-        setSynopsis(demo);
-        setEditedSynopsis(demo.synopsis);
-        setProgress(100);
-        setTimeout(() => setIsGenerating(false), 800);
+        setError('Failed to generate synopsis. Please try again.');
+        setProgress(0);
+        setIsGenerating(false);
       }
     };
 
@@ -134,15 +153,22 @@ export default function SynopsisPage() {
 
   const handleValidate = () => {
     if (!synopsis) return;
-    sessionStorage.setItem('mangaforge_synopsis', JSON.stringify({
+    const finalSynopsis = {
       ...synopsis,
       synopsis: isEditing ? editedSynopsis : synopsis.synopsis,
-    }));
+    };
+    sessionStorage.setItem('mangaforge_synopsis', JSON.stringify(finalSynopsis));
+    updateBible({
+      synopsis: finalSynopsis,
+      hiddenArc: synopsis.hiddenArc,
+      chapterBreakdown: synopsis.chapterBreakdown,
+    });
     router.push('/create/characters');
   };
 
-  const handleRegenerate = async () => {
+  const handleRegenerate = () => {
     setSynopsis(null);
+    setError(null);
     setIsGenerating(true);
     setProgress(0);
     setStage(0);
@@ -150,16 +176,7 @@ export default function SynopsisPage() {
 
   return (
     <main className="min-h-screen relative mesh-gradient">
-      <div className="fixed top-6 left-6 z-50">
-        <Link href="/create" className="flex items-center gap-2 text-ink-light hover:text-paper-warm transition-colors group">
-          <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          <span className="text-sm">Back to prompt</span>
-        </Link>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 pt-24 pb-32">
+      <div className="max-w-4xl mx-auto px-4 pt-20 pb-32">
         <AnimatePresence mode="wait">
           {isGenerating ? (
             <motion.div
@@ -169,12 +186,10 @@ export default function SynopsisPage() {
               exit={{ opacity: 0, y: -30 }}
               className="flex flex-col items-center justify-center min-h-[60vh]"
             >
-              {/* Orbiting particles */}
               <div className="relative w-48 h-48 mb-12">
                 <div className="absolute inset-0 rounded-full border border-violet/20 animate-spin-slow" />
                 <div className="absolute inset-4 rounded-full border border-cyan/20 animate-spin-reverse" />
                 <div className="absolute inset-8 rounded-full border border-cyan/15 animate-spin-slow" style={{ animationDuration: '3s' }} />
-                {/* Orbiting dots */}
                 <div className="absolute inset-0 animate-spin-slow" style={{ animationDuration: '4s' }}>
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-violet" />
                 </div>
@@ -221,6 +236,29 @@ export default function SynopsisPage() {
                 </motion.p>
               </AnimatePresence>
             </motion.div>
+          ) : error ? (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center min-h-[60vh]"
+            >
+              <div className="glass-panel p-12 text-center max-w-md">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-manga-red/10 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-manga-red" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h2 className="font-[family-name:var(--font-heading)] text-xl mb-3">Generation Failed</h2>
+                <p className="text-ink-light/50 text-sm mb-6">{error}</p>
+                <button
+                  onClick={handleRegenerate}
+                  className="px-8 py-3 rounded-xl btn-primary font-[family-name:var(--font-heading)]"
+                >
+                  Try Again
+                </button>
+              </div>
+            </motion.div>
           ) : (
             <motion.div
               key="result"
@@ -240,6 +278,19 @@ export default function SynopsisPage() {
                 <h1 className="font-[family-name:var(--font-heading)] text-3xl md:text-4xl font-light">The Blueprint</h1>
               </div>
 
+              {/* Original prompt reminder */}
+              {userPrompt && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="glass-card p-4 mb-8 max-w-3xl mx-auto"
+                >
+                  <p className="text-xs font-mono text-ink-light/40 mb-1 uppercase tracking-wider">Your Prompt</p>
+                  <p className="text-sm text-ink-light/60 italic">&ldquo;{userPrompt}&rdquo;</p>
+                </motion.div>
+              )}
+
               {synopsis && (
                 <div className="glass-panel p-8 md:p-12 max-w-3xl mx-auto">
                   <motion.h2
@@ -251,7 +302,7 @@ export default function SynopsisPage() {
                     {synopsis.title}
                   </motion.h2>
 
-                  {synopsis.alternativeTitles?.length > 0 && (
+                  {synopsis.alternativeTitles && synopsis.alternativeTitles.length > 0 && (
                     <p className="text-center text-sm text-ink-light/40 mb-6 italic">
                       Alt: {synopsis.alternativeTitles.join(' \u00B7 ')}
                     </p>
@@ -275,6 +326,11 @@ export default function SynopsisPage() {
                     {synopsis.genres.map((g) => (
                       <span key={g} className="px-3 py-1 rounded-full bg-violet/10 text-violet text-sm border border-violet/20">
                         {g}
+                      </span>
+                    ))}
+                    {synopsis.toneKeywords?.map((t) => (
+                      <span key={t} className="px-3 py-1 rounded-full bg-cyan/10 text-cyan text-sm border border-cyan/20">
+                        {t}
                       </span>
                     ))}
                   </motion.div>
@@ -317,6 +373,70 @@ export default function SynopsisPage() {
                       <p className="text-sm text-ink-light/50">{synopsis.setting}</p>
                     </div>
                   </motion.div>
+
+                  {/* Chapter Breakdown */}
+                  {synopsis.chapterBreakdown && synopsis.chapterBreakdown.length > 0 && (
+                    <motion.div
+                      className="mt-8 pt-6 border-t border-ink-mid/10"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                    >
+                      <h4 className="font-semibold text-ink-light/40 text-sm uppercase tracking-wider mb-4">
+                        Chapter Breakdown ({synopsis.estimatedChapters || synopsis.chapterBreakdown.length} chapters)
+                      </h4>
+                      <div className="space-y-3">
+                        {synopsis.chapterBreakdown.map((ch) => (
+                          <div key={ch.number} className="flex gap-3 text-sm">
+                            <span className="font-mono text-violet shrink-0 w-6 text-right">{ch.number}</span>
+                            <div className="flex-1">
+                              <span className="text-paper-warm/80 font-medium">{ch.title}</span>
+                              <p className="text-ink-light/40 text-xs mt-0.5">{ch.summary}</p>
+                            </div>
+                            <span className="text-xs text-cyan/50 shrink-0">{ch.hookType}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Hidden Arc — spoiler */}
+                  {synopsis.hiddenArc && (
+                    <motion.div
+                      className="mt-8 pt-6 border-t border-ink-mid/10"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.9 }}
+                    >
+                      <button
+                        onClick={() => setShowHiddenArc(!showHiddenArc)}
+                        className="flex items-center gap-2 text-sm text-ink-light/40 hover:text-paper-warm transition-colors"
+                      >
+                        <svg
+                          className={`w-4 h-4 transition-transform ${showHiddenArc ? 'rotate-90' : ''}`}
+                          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                        <span className="font-semibold uppercase tracking-wider">Hidden Arc</span>
+                        <span className="text-xs text-manga-red/50">(Spoiler)</span>
+                      </button>
+                      <AnimatePresence>
+                        {showHiddenArc && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <p className="mt-3 text-sm text-ink-light/50 italic leading-relaxed p-4 rounded-lg bg-manga-red/5 border border-manga-red/10">
+                              {synopsis.hiddenArc}
+                            </p>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  )}
                 </div>
               )}
 
@@ -324,7 +444,7 @@ export default function SynopsisPage() {
                 className="flex flex-wrap justify-center gap-4 mt-10"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 1.0 }}
               >
                 <button
                   onClick={handleValidate}

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { generateText, generateImage } from '@/lib/ai';
+import { generateText } from '@/lib/ai';
 
 export async function POST(request: Request) {
   try {
-    const { synopsis, characters, chapterNumber, style, pageCount, panelsPerPage, hiddenArc } = await request.json();
+    const { synopsis, characters, chapterNumber, style, pageCount, panelsPerPage, hiddenArc, contentRating, artDetail, colorMode, previousChapters } = await request.json();
 
     // Step 1: Generate the chapter script
     const scriptPrompt = `You are a master manga scriptwriter. Create a detailed page-by-page script for Chapter ${chapterNumber}.
@@ -15,6 +15,10 @@ CHAPTER NUMBER: ${chapterNumber}
 PAGES: ${pageCount || 20}
 PANELS PER PAGE: ${panelsPerPage || 6}
 STYLE: ${style}
+CONTENT RATING: ${contentRating || 'PG-13'}
+ART DETAIL LEVEL: ${artDetail || 'High'}
+COLOR MODE: ${colorMode || 'Auto'}
+${previousChapters?.length ? `PREVIOUS CHAPTER SUMMARIES:\n${previousChapters.map((ch: { chapterNumber: number; title: string; summary: string }) => `Chapter ${ch.chapterNumber} "${ch.title}": ${ch.summary}`).join('\n')}` : ''}
 
 Generate a JSON response:
 {

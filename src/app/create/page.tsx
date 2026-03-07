@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { COMIC_STYLES, type ComicStyleId } from '@/lib/styles';
 import { TypewriterText } from '@/components/typewriter-text';
-import Link from 'next/link';
+import { updateBible } from '@/lib/bible';
 
 const CONTENT_RATINGS = ['G', 'PG', 'PG-13', 'R', 'Mature'] as const;
 const ART_DETAIL = ['Standard', 'High', 'Ultra'] as const;
@@ -40,30 +40,29 @@ export default function CreatePage() {
     if (!prompt.trim() || !selectedStyle) return;
     setIsForging(true);
 
-    sessionStorage.setItem('mangaforge_config', JSON.stringify({
-      prompt,
+    const config = {
       style: selectedStyle,
       pagesPerChapter,
       panelsPerPage,
       contentRating,
       artDetail,
       colorMode,
-    }));
+    };
+    sessionStorage.setItem('mangaforge_config', JSON.stringify({ prompt, ...config }));
+
+    // Initialize the story bible
+    updateBible({
+      prompt,
+      config,
+      chapters: [],
+    });
 
     setTimeout(() => router.push('/create/synopsis'), 1500);
   };
 
   return (
     <main className="min-h-screen relative mesh-gradient-intense">
-      {/* Back nav */}
-      <div className="fixed top-6 left-6 z-50">
-        <Link href="/" className="flex items-center gap-2 text-ink-light hover:text-paper-warm transition-colors group">
-          <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          <span className="font-[family-name:var(--font-display)] text-lg gradient-text">InkForge</span>
-        </Link>
-      </div>
+      {/* Breadcrumb nav is in the layout */}
 
       {/* Forging animation overlay */}
       <AnimatePresence>

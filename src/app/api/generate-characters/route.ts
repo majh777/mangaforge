@@ -3,7 +3,7 @@ import { generateText } from '@/lib/ai';
 
 export async function POST(request: Request) {
   try {
-    const { synopsis, style } = await request.json();
+    const { synopsis, style, contentRating, artDetail, colorMode } = await request.json();
 
     const systemInstruction = `You are MangaForge's character creation engine. You design psychologically complex characters using a 10-model personality framework. Always respond in valid JSON.`;
 
@@ -11,6 +11,9 @@ export async function POST(request: Request) {
 
 SYNOPSIS: ${JSON.stringify(synopsis)}
 ART STYLE: ${style}
+CONTENT RATING: ${contentRating || 'PG-13'}
+ART DETAIL LEVEL: ${artDetail || 'High'}
+COLOR MODE: ${colorMode || 'Auto'}
 
 Generate a JSON response with this exact structure:
 {

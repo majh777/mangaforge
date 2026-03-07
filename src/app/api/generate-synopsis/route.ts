@@ -3,7 +3,7 @@ import { generateText } from '@/lib/ai';
 
 export async function POST(request: Request) {
   try {
-    const { prompt, style, pages, panels } = await request.json();
+    const { prompt, style, pagesPerChapter, panelsPerPage, contentRating, artDetail, colorMode } = await request.json();
 
     const systemInstruction = `You are MangaForge's narrative AI engine. You create compelling manga/comic synopses with deep narrative structures. You always respond in valid JSON.`;
 
@@ -11,8 +11,11 @@ export async function POST(request: Request) {
 
 CONCEPT: ${prompt}
 STYLE: ${style}
-PAGES PER CHAPTER: ${pages || 20}
-PANELS PER PAGE: ${panels || 6}
+PAGES PER CHAPTER: ${pagesPerChapter || 20}
+PANELS PER PAGE: ${panelsPerPage || 6}
+CONTENT RATING: ${contentRating || 'PG-13'}
+ART DETAIL LEVEL: ${artDetail || 'High'}
+COLOR MODE: ${colorMode || 'Auto'}
 
 Generate a JSON response with this exact structure:
 {
