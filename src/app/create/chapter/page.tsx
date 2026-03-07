@@ -89,11 +89,15 @@ export default function ChapterPage() {
       return;
     }
 
+    const resolvedConfig = config;
+    const resolvedSynopsis = synopsis;
+    const resolvedCharacters = characters;
+
     const bible = loadBible();
     const nextChapterNumber = (bible?.chapters?.length || 0) + 1;
     setChapterNumber(nextChapterNumber);
 
-    const userId = config.userId || getClientUserId();
+    const userId = resolvedConfig.userId || getClientUserId();
 
     async function generateChapter() {
       setError(null);
@@ -109,17 +113,17 @@ export default function ChapterPage() {
           },
           body: JSON.stringify({
             userId,
-            synopsis,
-            characters,
+            synopsis: resolvedSynopsis,
+            characters: resolvedCharacters,
             chapterNumber: nextChapterNumber,
-            style: config.style,
-            stylePreset: config.stylePreset,
-            panelTemplate: config.panelTemplate,
-            pageCount: config.pagesPerChapter,
-            panelsPerPage: config.panelsPerPage,
-            contentRating: config.contentRating,
-            artDetail: config.artDetail,
-            colorMode: config.colorMode,
+            style: resolvedConfig.style,
+            stylePreset: resolvedConfig.stylePreset,
+            panelTemplate: resolvedConfig.panelTemplate,
+            pageCount: resolvedConfig.pagesPerChapter,
+            panelsPerPage: resolvedConfig.panelsPerPage,
+            contentRating: resolvedConfig.contentRating,
+            artDetail: resolvedConfig.artDetail,
+            colorMode: resolvedConfig.colorMode,
             hiddenArc: bible?.hiddenArc,
             previousChapters: bible?.chapters || [],
           }),

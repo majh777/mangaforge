@@ -125,7 +125,8 @@ export default function SynopsisPage() {
   useEffect(() => {
     if (!configSignature || !config) return;
 
-    const userId = config.userId || getClientUserId();
+    const resolvedConfig = config;
+    const userId = resolvedConfig.userId || getClientUserId();
     const controller = new AbortController();
 
     async function generate() {
@@ -143,7 +144,7 @@ export default function SynopsisPage() {
             'Content-Type': 'application/json',
             'x-user-id': userId,
           },
-          body: JSON.stringify({ ...config, userId }),
+          body: JSON.stringify({ ...resolvedConfig, userId }),
         });
 
         if (!response.ok) {
@@ -165,7 +166,7 @@ export default function SynopsisPage() {
         const fallback: Synopsis = {
           title: 'Untitled Project',
           alternativeTitles: [],
-          logline: config.prompt,
+          logline: resolvedConfig.prompt,
           genres: ['Adventure'],
           synopsis:
             'We could not reach the generation service. You can still continue and edit this text manually.',

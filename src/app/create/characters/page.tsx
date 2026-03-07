@@ -169,7 +169,9 @@ export default function CharactersPage() {
       return;
     }
 
-    const userId = config.userId || getClientUserId();
+    const resolvedConfig = config;
+    const resolvedSynopsis = synopsis;
+    const userId = resolvedConfig.userId || getClientUserId();
 
     async function generateCharacters() {
       setIsGenerating(true);
@@ -184,11 +186,11 @@ export default function CharactersPage() {
           },
           body: JSON.stringify({
             userId,
-            synopsis,
-            style: config.style,
-            contentRating: config.contentRating,
-            artDetail: config.artDetail,
-            colorMode: config.colorMode,
+            synopsis: resolvedSynopsis,
+            style: resolvedConfig.style,
+            contentRating: resolvedConfig.contentRating,
+            artDetail: resolvedConfig.artDetail,
+            colorMode: resolvedConfig.colorMode,
           }),
         });
 
@@ -198,7 +200,7 @@ export default function CharactersPage() {
         }
 
         const data = (await response.json()) as { characters?: Character[] };
-        const generated = (data.characters || []).slice(0, 8).map((character) => ({
+        const generated: Character[] = (data.characters || []).slice(0, 8).map((character) => ({
           ...character,
           portraitUrl: undefined,
           isGeneratingPortrait: true,
@@ -209,7 +211,7 @@ export default function CharactersPage() {
 
         const updatedCharacters = [...generated];
         for (let index = 0; index < generated.length; index += 1) {
-          const imageUrl = await generatePortraitInBackground(generated[index], config.style, userId);
+          const imageUrl = await generatePortraitInBackground(generated[index], resolvedConfig.style, userId);
           updatedCharacters[index] = {
             ...updatedCharacters[index],
             portraitUrl: imageUrl || undefined,
@@ -294,7 +296,7 @@ export default function CharactersPage() {
     const userId = config.userId || getClientUserId();
 
     setSessionJSON('characters', characters);
-    updateBible({ characters });
+    updateBible({ characters: characters as unknown as Array<Record<string, unknown>> });
 
     const draftProjectId = getSessionText('draftProjectId');
     if (draftProjectId) {

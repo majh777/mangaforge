@@ -7,7 +7,18 @@ interface RouteParams {
   params: Promise<{ slug: string }>;
 }
 
-async function getSharedProject(slug: string) {
+async function getSharedProjectForMeta(slug: string) {
+  const db = await readDb();
+  const projectId = db.shareIndex[slug];
+  if (!projectId) return null;
+
+  const project = db.projects.find((entry) => entry.id === projectId);
+  if (!project || !project.isPublic) return null;
+
+  return project;
+}
+
+async function getSharedProjectAndTrackView(slug: string) {
   return mutateDb((db) => {
     const projectId = db.shareIndex[slug];
     if (!projectId) return null;
@@ -24,7 +35,7 @@ async function getSharedProject(slug: string) {
 
 export async function generateMetadata({ params }: RouteParams): Promise<Metadata> {
   const { slug } = await params;
-  const project = await getSharedProject(slug);
+  const project = await getSharedProjectForMeta(slug);
 
   if (!project) {
     return {
@@ -54,7 +65,7 @@ export async function generateMetadata({ params }: RouteParams): Promise<Metadat
 
 export default async function SharedProjectPage({ params }: RouteParams) {
   const { slug } = await params;
-  const project = await getSharedProject(slug);
+  const project = await getSharedProjectAndTrackView(slug);
 
   if (!project) {
     notFound();
