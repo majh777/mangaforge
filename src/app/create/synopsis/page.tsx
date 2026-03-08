@@ -162,21 +162,13 @@ export default function SynopsisPage() {
       } catch (err) {
         if ((err as Error).name === 'AbortError') return;
 
-        setError((err as Error).message || 'Could not generate synopsis');
-        const fallback: Synopsis = {
-          title: 'Untitled Project',
-          alternativeTitles: [],
-          logline: resolvedConfig.prompt,
-          genres: ['Adventure'],
-          synopsis:
-            'We could not reach the generation service. You can still continue and edit this text manually.',
-          themes: ['Discovery'],
-          setting: 'To be defined',
-          chapterBreakdown: [],
-          hiddenArc: '',
-        };
-        setSynopsis(fallback);
-        setEditedSynopsis(fallback.synopsis);
+        const errorMessage = (err as Error).message || 'Could not generate synopsis';
+        setError(errorMessage);
+        console.error('Synopsis generation failed:', errorMessage);
+
+        // Do NOT set a fallback synopsis — keep synopsis null so the user
+        // sees the error state with a retry button instead of unknowingly
+        // continuing with a placeholder that poisons downstream generation.
         setProgress(100);
         setTimeout(() => setIsGenerating(false), 300);
       }
@@ -308,7 +300,15 @@ export default function SynopsisPage() {
               </div>
 
               {error && (
-                <div className="glass-card p-4 text-sm text-red-200 border border-red-400/30 mb-6">{error}</div>
+                <div className="glass-card p-6 text-center border border-red-400/30 mb-6">
+                  <p className="text-red-200 mb-4">{error}</p>
+                  <button
+                    onClick={handleRegenerate}
+                    className="px-8 py-3 rounded-xl btn-primary font-[family-name:var(--font-heading)] font-semibold"
+                  >
+                    🔄 Try Again
+                  </button>
+                </div>
               )}
 
               {synopsis && (

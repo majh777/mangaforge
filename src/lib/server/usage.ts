@@ -3,9 +3,9 @@ import { mutateDb, readDb } from '@/lib/server/db';
 import { ApiError } from '@/lib/server/errors';
 
 export const DAILY_CREDIT_LIMIT: Record<UserTier, number> = {
-  free: 20,
-  starter: 250,
-  pro: 1000,
+  free: 500,
+  starter: 1000,
+  pro: 5000,
   unlimited: Number.POSITIVE_INFINITY,
 };
 

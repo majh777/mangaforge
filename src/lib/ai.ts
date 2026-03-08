@@ -25,9 +25,9 @@ export const AI_CONFIG = {
   textEndpoint:
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent',
 
-  imageModel: 'gemini-2.0-flash-preview-image-generation',
+  imageModel: 'gemini-2.0-flash-exp-image-generation',
   imageEndpoint:
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp-image-generation:generateContent',
 
   fallbackTextModel: 'gemini-2.5-flash',
   fallbackEndpoint:
