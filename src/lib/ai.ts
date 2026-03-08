@@ -5,6 +5,10 @@ interface GenerateImageBatchOptions {
   retries?: number;
 }
 
+interface GenerateImageOptions {
+  referenceImages?: string[];
+}
+
 declare global {
   // eslint-disable-next-line no-var
   var __inkforgeImageCache: Map<string, { image: string; timestamp: number }> | undefined;
@@ -141,16 +145,43 @@ function extractImageFromGeminiResponse(data: Record<string, unknown>): string {
   throw new Error('No image found in generation response');
 }
 
-export async function generateImage(prompt: string): Promise<string> {
-  const cached = getCachedImage(prompt);
-  if (cached) return cached;
+interface GenerateImageOptions {
+  referenceImages?: string[];
+}
+
+function dataUrlToInlinePart(dataUrl: string): { inlineData: { mimeType: string; data: string } } | null {
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+  if (!match) return null;
+  return {
+    inlineData: {
+      mimeType: match[1],
+      data: match[2],
+    },
+  };
+}
+
+export async function generateImage(prompt: string, options: GenerateImageOptions = {}): Promise<string> {
+  const referenceImages = (options.referenceImages || []).filter(Boolean);
+
+  // Only use cache for prompt-only generations.
+  if (referenceImages.length === 0) {
+    const cached = getCachedImage(prompt);
+    if (cached) return cached;
+  }
 
   const key = assertApiKey();
+  const parts: Array<Record<string, unknown>> = [{ text: prompt }];
+
+  for (const ref of referenceImages.slice(0, 4)) {
+    const inlinePart = dataUrlToInlinePart(ref);
+    if (inlinePart) parts.push(inlinePart);
+  }
+
   const response = await fetch(`${AI_CONFIG.imageEndpoint}?key=${key}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
+      contents: [{ parts }],
       generationConfig: {
         responseModalities: ['IMAGE', 'TEXT'],
         temperature: 0.9,
@@ -164,17 +195,24 @@ export async function generateImage(prompt: string): Promise<string> {
 
   const data = (await response.json()) as Record<string, unknown>;
   const image = extractImageFromGeminiResponse(data);
-  setCachedImage(prompt, image);
+
+  if (referenceImages.length === 0) {
+    setCachedImage(prompt, image);
+  }
 
   return image;
 }
 
-export async function generateImageWithRetry(prompt: string, retries = 2): Promise<string> {
+export async function generateImageWithRetry(
+  prompt: string,
+  retries = 2,
+  options: GenerateImageOptions = {}
+): Promise<string> {
   let lastError: unknown;
 
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     try {
-      return await generateImage(prompt);
+      return await generateImage(prompt, options);
     } catch (error) {
       lastError = error;
       await new Promise((resolve) => setTimeout(resolve, 350 * (attempt + 1)));

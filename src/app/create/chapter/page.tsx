@@ -177,7 +177,8 @@ export default function ChapterPage() {
             userId,
             chapterNumber: nextChapterNumber,
             prompts,
-            concurrency: 3,
+            characters: resolvedCharacters,
+            concurrency: 1,
           }),
         });
 
